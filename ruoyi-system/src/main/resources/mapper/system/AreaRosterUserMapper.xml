@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AreaRosterUserMapper">
+
+    <resultMap type="com.ruoyi.system.entity.AreaRosterUser" id="AreaRosterUserResult">
+        <result property="id"    column="id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="remark"    column="remark"    />
+        <result property="userId"    column="user_id"    />
+        <result property="rosterId"    column="roster_id"    />
+        <result property="rosterName"    column="roster_name"    />
+        <result property="rosterTime"    column="roster_time"    />
+        <result property="isDeleted"    column="is_deleted"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="deptName"    column="dept_name"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="status"    column="status"    />
+        <result property="phone"    column="phone"    />
+    </resultMap>
+
+    <sql id="selectAreaRosterUserVo">
+        select id, create_time, create_by, update_time, update_by, remark, user_id, roster_id, roster_name, roster_time, is_deleted, dept_id, dept_name, nick_name, status,phone from area_roster_user
+    </sql>
+
+    <select id="selectAreaRosterUserList" parameterType="com.ruoyi.system.entity.AreaRosterUser" resultMap="AreaRosterUserResult">
+        <include refid="selectAreaRosterUserVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="rosterId != null "> and roster_id = #{rosterId}</if>
+            <if test="rosterName != null  and rosterName != ''"> and roster_name like concat('%', #{rosterName}, '%')</if>
+            <if test="rosterTime != null  and rosterTime != ''"> and roster_time = #{rosterTime}</if>
+            <if test="isDeleted != null "> and is_deleted = #{isDeleted}</if>
+            <if test="deptId != null "> and dept_id = #{deptId}</if>
+            <if test="deptName != null  and deptName != ''"> and dept_name like concat('%', #{deptName}, '%')</if>
+            <if test="nickName != null  and nickName != ''"> and nick_name like concat('%', #{nickName}, '%')</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="phone != null and phone != ''"> and phone = #{phone}</if>
+        </where>
+    </select>
+
+    <select id="selectAreaRosterUserById" parameterType="Long" resultMap="AreaRosterUserResult">
+        <include refid="selectAreaRosterUserVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertAreaRosterUser" parameterType="com.ruoyi.system.entity.AreaRosterUser">
+        insert into area_roster_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="remark != null">remark,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="rosterId != null">roster_id,</if>
+            <if test="rosterName != null">roster_name,</if>
+            <if test="rosterTime != null">roster_time,</if>
+            <if test="isDeleted != null">is_deleted,</if>
+            <if test="deptId != null">dept_id,</if>
+            <if test="deptName != null">dept_name,</if>
+            <if test="nickName != null">nick_name,</if>
+            <if test="status != null">status,</if>
+            <if test="phone != null">phone,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="rosterId != null">#{rosterId},</if>
+            <if test="rosterName != null">#{rosterName},</if>
+            <if test="rosterTime != null">#{rosterTime},</if>
+            <if test="isDeleted != null">#{isDeleted},</if>
+            <if test="deptId != null">#{deptId},</if>
+            <if test="deptName != null">#{deptName},</if>
+            <if test="nickName != null">#{nickName},</if>
+            <if test="status != null">#{status},</if>
+            <if test="phone != null">#{phone},</if>
+        </trim>
+    </insert>
+
+    <update id="updateAreaRosterUser" parameterType="com.ruoyi.system.entity.AreaRosterUser">
+        update area_roster_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="rosterId != null">roster_id = #{rosterId},</if>
+            <if test="rosterName != null">roster_name = #{rosterName},</if>
+            <if test="rosterTime != null">roster_time = #{rosterTime},</if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="deptName != null">dept_name = #{deptName},</if>
+            <if test="nickName != null">nick_name = #{nickName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="phone != null">phone = #{phone},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAreaRosterUserById" parameterType="Long">
+        delete from area_roster_user where id = #{id}
+    </delete>
+
+    <delete id="deleteAreaRosterUserByIds" parameterType="String">
+        delete from area_roster_user where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectListWrapper" resultType="com.ruoyi.system.vo.AreaRosterUserVO">
+        select * from area_roster_user  ${ew.customsqlsegment}
+    </select>
+</mapper>

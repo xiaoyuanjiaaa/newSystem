@@ -1,0 +1,187 @@
+package com.ruoyi.system.service.impl;
+
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.RandomUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ruoyi.common.core.domain.model.ResultVO;
+import com.ruoyi.common.enums.FailEnums;
+import com.ruoyi.common.enums.SuccessEnums;
+import com.ruoyi.common.exception.CustomException;
+import com.ruoyi.common.utils.CheckUtil;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.statics.ConstantDic;
+import com.ruoyi.system.dto.ZhSmsDTO;
+import com.ruoyi.system.entity.AppSmsConfig;
+import com.ruoyi.system.entity.AppSmsSendLog;
+import com.ruoyi.system.entity.SmsConfig;
+import com.ruoyi.system.mapper.AppSmsConfigMapper;
+import com.ruoyi.system.service.IAppSmsConfigService;
+import com.ruoyi.system.service.IAppSmsSendLogService;
+import com.ruoyi.system.service.ISmsConfigService;
+import lombok.extern.slf4j.Slf4j;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+
+/**
+ * @Description
+ * @Author  dll
+ * @Date 2021-08-14 02:11
+ */
+@Slf4j
+@Service
+public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, AppSmsConfig> implements IAppSmsConfigService {
+
+   @Autowired
+   private RedisTemplate redisTemplate;
+
+   @Autowired
+   private IAppSmsSendLogService smsSendLogService;
+
+
+   @Autowired
+   private OkHttpClient client;
+
+   @Autowired
+   private ISmsConfigService smsConfigService;
+
+   @Autowired
+   private IAppSmsConfigService appSmsConfigService;
+
+   @Value("${smsZh.sms.url}")
+   private String sendMessageUrl;
+
+   @Value("${smsZh.sms.uid}")
+   private String uId;
+
+   @Value("${smsZh.sms.userPwd}")
+   private String userPwd;
+
+   private String message="【无锡五院】您的验证码：";
+
+   @Override
+   public ResultVO sendMessage(String phone) {
+      String smsCode = RandomUtil.randomNumbers(6);
+      String requestBody = getMessageInfoObj(phone, message+smsCode);
+      String result = sendSms(requestBody);
+      if(!CheckUtil.NullOrEmpty(result)){
+         log.info("phone={},发送短信验证码，返回结果:{}", phone, result);
+         JSONObject resultObj = JSONObject.parseObject(result);
+         String resultCode = resultObj.get("resultcode").toString();
+         String resultMsg = resultObj.get("resultmsg").toString();
+         if (resultCode.equals("0")) {
+            String key = ConstantDic.SMS_REGISTER_PREFIX + phone;
+            redisTemplate.opsForValue().set(key, smsCode, 5, TimeUnit.MINUTES);
+            addAppSmsSendLog(phone, message+smsCode, CheckUtil.strParseLong(resultCode), resultMsg);
+            return new ResultVO(SuccessEnums.SMS_SEND_SUCCESS, resultMsg);
+         } else {
+            addAppSmsSendLog(phone, message+smsCode, CheckUtil.strParseLong(resultCode), resultMsg);
+            throw new CustomException(resultMsg);
+         }
+      }
+      return new ResultVO(FailEnums.SMS_SEND_RECORD, null);
+   }
+
+   @Override
+   public void sendMessage(String prefix,String phone,String type) {
+      SmsConfig smsConfig = smsConfigService.getOne(new QueryWrapper<SmsConfig>().eq("type",type));
+      if(ObjectUtil.isEmpty(smsConfig)){
+         return;
+      }
+      String messages = "【无锡五院】"+prefix.concat(",").concat(smsConfig.getMessage());
+      String requestBody = getMessageInfoObj(phone, messages);
+      String result = sendSms(requestBody);
+      if(!CheckUtil.NullOrEmpty(result)){
+         JSONObject resultObj = JSONObject.parseObject(result);
+         String resultCode = resultObj.get("resultcode").toString();
+         String resultMsg = resultObj.get("resultmsg").toString();
+         addAppSmsSendLog(phone, messages, CheckUtil.strParseLong(resultCode), resultMsg);
+      }
+   }
+
+
+   private void addAppSmsSendLog(String mobile, String smsContent, Long smsStatus, String smsErrMsg){
+      AppSmsSendLog po = new AppSmsSendLog();
+      po.setSmsContent(smsContent).setSmsMobile(mobile).setSmsTime(new Date()).setSmsStatus(smsStatus).setSmsErrMsg(smsErrMsg);
+      smsSendLogService.save(po);
+   }
+
+   @Override
+   public void noticeReportBySms(ZhSmsDTO zhSmsDTO){
+      //插入到smslog里面
+      AppSmsSendLog appSmsSendLog = new AppSmsSendLog();
+      String result = sendSms(JSON.toJSONString(zhSmsDTO));
+      appSmsSendLog.setSmsContent(zhSmsDTO.getMessage());
+      appSmsSendLog.setSmsMobile(zhSmsDTO.getMobile());
+      appSmsSendLog.setSmsTime(new Date(System.currentTimeMillis()));
+      if (StringUtils.isNotBlank(result)){
+         JSONObject jsonObject = JSONObject.parseObject(result);
+         if (!"0".equals(jsonObject.getString("resultcode"))){
+            appSmsSendLog.setSmsErrMsg(jsonObject.getString("resultmsg"));
+         }
+      }
+      smsSendLogService.save(appSmsSendLog);
+   }
+
+
+
+   private String sendSms(String bodyStr){
+      MediaType mediaType = MediaType.parse("application/json");
+      RequestBody body = RequestBody.create(mediaType, bodyStr);
+      Request request = new Request.Builder()
+              .url(sendMessageUrl)
+              .method("POST", body)
+              .addHeader("Content-Type", "application/json")
+              .build();
+      String response = null;
+      try {
+         response = client.newCall(request).execute().body().string();
+      } catch (IOException e) {
+         e.printStackTrace();
+         throw new CustomException("调用中国移动短信返回数据异常");
+      }
+      return response;
+   }
+
+
+
+
+   private String getMessageInfoObj(String mobile, String Params){
+      JSONObject bj = new JSONObject();
+      bj.put("uid",uId);
+      bj.put("userpwd",userPwd);
+      bj.put("mobile",mobile);
+      bj.put("message",Params);
+      bj.put("ext","111");
+      return bj.toString();
+   }
+
+   @Override
+   public ResultVO addSmsConfig(AppSmsConfig appSmsConfig) {
+      LambdaQueryWrapper<AppSmsConfig> queryWrapper = new LambdaQueryWrapper<>();
+      queryWrapper.eq(AppSmsConfig::getSmsTime,appSmsConfig.getSmsTime());
+      List<AppSmsConfig> result=appSmsConfigService.list(queryWrapper);
+      if(ObjectUtil.isNotEmpty(result)){
+        return new ResultVO<>(FailEnums.REPEAT_TIME_ERROR);
+      }
+      appSmsConfigService.save(appSmsConfig);
+      return new ResultVO<>(SuccessEnums.SAVE_SUCCESS,null);
+   }
+}

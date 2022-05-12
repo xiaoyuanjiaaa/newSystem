@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.NucleicAcidThresholdMapper">
+
+
+    <select id="getListByBoolean" resultType="com.ruoyi.system.entity.NucleicAcid">
+        SELECT a.* from nucleic_acid a INNER JOIN nucleic_acid_threshold b on a.result = b.threshold_value
+        WHERE a.type = #{type}
+    </select>
+
+    <select id="getListByNumber" resultType="com.ruoyi.system.entity.NucleicAcid">
+        SELECT * from nucleic_acid a LEFT JOIN nucleic_acid_threshold b on 1=1
+        WHERE  b.threshold_value >= a.test_date and a.test_date >= b.evaluate_standard and a.type =  #{type} GROUP BY a.id
+    </select>
+
+</mapper>

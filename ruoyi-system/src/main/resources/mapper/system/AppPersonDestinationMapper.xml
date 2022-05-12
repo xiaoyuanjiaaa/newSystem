@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppPersonDestinationMapper">
+   <resultMap id="BaseResultMap" type="com.ruoyi.system.entity.AppPersonDestination" >
+       <result column="ud_id" property="udId" />
+       <result column="ud_date" property="udDate" />
+       <result column="destination_id" property="destinationId" />
+       <result column="person_id" property="personId" />
+       <result column="user_id" property="userId" />
+   </resultMap>
+
+   <sql id="Base_Column_List">
+       ud_id,
+       ud_date,
+       destination_id,
+       person_id,
+       user_id
+   </sql>
+
+
+    <select id="selectListByWrapper" resultType="com.ruoyi.system.vo.AppPersonDestinationVO">
+            select ud_id, ud_date, app_person_destination.destination_id, person_id,
+            user_id, destination_name from app_person_destination
+                left join app_destination
+                on app_person_destination.destination_id = app_destination.destination_id
+                and app_destination.is_del = 0 ${ew.customsqlsegment}
+    </select>
+
+</mapper>

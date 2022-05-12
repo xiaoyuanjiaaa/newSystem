@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.MaterialInputMapper">
+
+    <resultMap id="BaseResultMap" type="com.ruoyi.system.entity.MaterialInput">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="input_no" jdbcType="VARCHAR" property="inputNo" />
+        <result column="input_date" jdbcType="VARCHAR" property="inputDate" />
+        <result column="material_category" jdbcType="VARCHAR" property="materialCategory" />
+        <result column="instrument_name" jdbcType="VARCHAR" property="instrumentName" />
+        <result column="method" jdbcType="VARCHAR" property="method" />
+        <result column="is_charge" jdbcType="INTEGER" property="isCharge" />
+        <result column="is_highvalue" jdbcType="INTEGER" property="isHighvalue" />
+        <result column="is_once" jdbcType="INTEGER" property="isOnce" />
+        <result column="finance_category" jdbcType="VARCHAR" property="financeCategory" />
+        <result column="material_name" jdbcType="VARCHAR" property="materialName" />
+        <result column="specifications" jdbcType="VARCHAR" property="specifications" />
+        <result column="unit" jdbcType="VARCHAR" property="unit" />
+        <result column="number" jdbcType="INTEGER" property="number" />
+        <result column="price" jdbcType="DECIMAL" property="price" />
+        <result column="money" jdbcType="DECIMAL" property="money" />
+        <result column="shipping_company" jdbcType="VARCHAR" property="shippingCompany" />
+        <result column="invoice_no" jdbcType="VARCHAR" property="invoiceNo" />
+        <result column="manufacturer" jdbcType="VARCHAR" property="manufacturer" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        id, input_no, input_date, material_category, instrument_name, method, is_charge,
+  is_highvalue, is_once, finance_category, material_name, specifications, unit, number,
+  price, money, shipping_company, invoice_no, manufacturer
+    </sql>
+
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from material_input
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+
+    <insert id="insert" parameterType="com.ruoyi.system.entity.MaterialInput">
+        insert into material_input (id, input_no, input_date,
+                                    material_category, instrument_name, method,
+                                    is_charge, is_highvalue, is_once,
+                                    finance_category, material_name, specifications,
+                                    unit, number, price,
+                                    money, shipping_company, invoice_no,
+                                    manufacturer)
+        values (#{id,jdbcType=BIGINT}, #{inputNo,jdbcType=VARCHAR}, #{inputDate,jdbcType=DATE},
+                #{materialCategory,jdbcType=VARCHAR}, #{instrumentName,jdbcType=VARCHAR}, #{method,jdbcType=VARCHAR},
+                #{isCharge,jdbcType=INTEGER}, #{isHighvalue,jdbcType=INTEGER}, #{isOnce,jdbcType=INTEGER},
+                #{financeCategory,jdbcType=VARCHAR}, #{materialName,jdbcType=VARCHAR}, #{specifications,jdbcType=VARCHAR},
+                #{unit,jdbcType=VARCHAR}, #{number,jdbcType=INTEGER}, #{price,jdbcType=DECIMAL},
+                #{money,jdbcType=DECIMAL}, #{shippingCompany,jdbcType=VARCHAR}, #{invoiceNo,jdbcType=VARCHAR},
+                #{manufacturer,jdbcType=VARCHAR})
+    </insert>
+
+
+    <insert id="insertDynamic" parameterType="com.ruoyi.system.entity.MaterialInput">
+        insert into material_input
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="inputNo != null">
+                input_no,
+            </if>
+            <if test="inputDate != null">
+                input_date,
+            </if>
+            <if test="materialCategory != null">
+                material_category,
+            </if>
+            <if test="instrumentName != null">
+                instrument_name,
+            </if>
+            <if test="method != null">
+                method,
+            </if>
+            <if test="isCharge != null">
+                is_charge,
+            </if>
+            <if test="isHighvalue != null">
+                is_highvalue,
+            </if>
+            <if test="isOnce != null">
+                is_once,
+            </if>
+            <if test="financeCategory != null">
+                finance_category,
+            </if>
+            <if test="materialName != null">
+                material_name,
+            </if>
+            <if test="specifications != null">
+                specifications,
+            </if>
+            <if test="unit != null">
+                unit,
+            </if>
+            <if test="number != null">
+                number,
+            </if>
+            <if test="price != null">
+                price,
+            </if>
+            <if test="money != null">
+                money,
+            </if>
+            <if test="shippingCompany != null">
+                shipping_company,
+            </if>
+            <if test="invoiceNo != null">
+                invoice_no,
+            </if>
+            <if test="manufacturer != null">
+                manufacturer,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="inputNo != null">
+                #{inputNo,jdbcType=VARCHAR},
+            </if>
+            <if test="inputDate != null">
+                #{inputDate,jdbcType=DATE},
+            </if>
+            <if test="materialCategory != null">
+                #{materialCategory,jdbcType=VARCHAR},
+            </if>
+            <if test="instrumentName != null">
+                #{instrumentName,jdbcType=VARCHAR},
+            </if>
+            <if test="method != null">
+                #{method,jdbcType=VARCHAR},
+            </if>
+            <if test="isCharge != null">
+                #{isCharge,jdbcType=INTEGER},
+            </if>
+            <if test="isHighvalue != null">
+                #{isHighvalue,jdbcType=INTEGER},
+            </if>
+            <if test="isOnce != null">
+                #{isOnce,jdbcType=INTEGER},
+            </if>
+            <if test="financeCategory != null">
+                #{financeCategory,jdbcType=VARCHAR},
+            </if>
+            <if test="materialName != null">
+                #{materialName,jdbcType=VARCHAR},
+            </if>
+            <if test="specifications != null">
+                #{specifications,jdbcType=VARCHAR},
+            </if>
+            <if test="unit != null">
+                #{unit,jdbcType=VARCHAR},
+            </if>
+            <if test="number != null">
+                #{number,jdbcType=INTEGER},
+            </if>
+            <if test="price != null">
+                #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="money != null">
+                #{money,jdbcType=DECIMAL},
+            </if>
+            <if test="shippingCompany != null">
+                #{shippingCompany,jdbcType=VARCHAR},
+            </if>
+            <if test="invoiceNo != null">
+                #{invoiceNo,jdbcType=VARCHAR},
+            </if>
+            <if test="manufacturer != null">
+                #{manufacturer,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+
+    <update id="updateDynamic" parameterType="com.ruoyi.system.entity.MaterialInput">
+        update material_input
+        <set>
+            <if test="inputNo != null">
+                input_no = #{inputNo,jdbcType=VARCHAR},
+            </if>
+            <if test="inputDate != null">
+                input_date = #{inputDate,jdbcType=DATE},
+            </if>
+            <if test="materialCategory != null">
+                material_category = #{materialCategory,jdbcType=VARCHAR},
+            </if>
+            <if test="instrumentName != null">
+                instrument_name = #{instrumentName,jdbcType=VARCHAR},
+            </if>
+            <if test="method != null">
+                method = #{method,jdbcType=VARCHAR},
+            </if>
+            <if test="isCharge != null">
+                is_charge = #{isCharge,jdbcType=INTEGER},
+            </if>
+            <if test="isHighvalue != null">
+                is_highvalue = #{isHighvalue,jdbcType=INTEGER},
+            </if>
+            <if test="isOnce != null">
+                is_once = #{isOnce,jdbcType=INTEGER},
+            </if>
+            <if test="financeCategory != null">
+                finance_category = #{financeCategory,jdbcType=VARCHAR},
+            </if>
+            <if test="materialName != null">
+                material_name = #{materialName,jdbcType=VARCHAR},
+            </if>
+            <if test="specifications != null">
+                specifications = #{specifications,jdbcType=VARCHAR},
+            </if>
+            <if test="unit != null">
+                unit = #{unit,jdbcType=VARCHAR},
+            </if>
+            <if test="number != null">
+                number = #{number,jdbcType=INTEGER},
+            </if>
+            <if test="price != null">
+                price = #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="money != null">
+                money = #{money,jdbcType=DECIMAL},
+            </if>
+            <if test="shippingCompany != null">
+                shipping_company = #{shippingCompany,jdbcType=VARCHAR},
+            </if>
+            <if test="invoiceNo != null">
+                invoice_no = #{invoiceNo,jdbcType=VARCHAR},
+            </if>
+            <if test="manufacturer != null">
+                manufacturer = #{manufacturer,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+
+    <update id="update" parameterType="com.ruoyi.system.entity.MaterialInput">
+        update material_input
+        set input_no = #{inputNo,jdbcType=VARCHAR},
+            input_date = #{inputDate,jdbcType=DATE},
+            material_category = #{materialCategory,jdbcType=VARCHAR},
+            instrument_name = #{instrumentName,jdbcType=VARCHAR},
+            method = #{method,jdbcType=VARCHAR},
+            is_charge = #{isCharge,jdbcType=INTEGER},
+            is_highvalue = #{isHighvalue,jdbcType=INTEGER},
+            is_once = #{isOnce,jdbcType=INTEGER},
+            finance_category = #{financeCategory,jdbcType=VARCHAR},
+            material_name = #{materialName,jdbcType=VARCHAR},
+            specifications = #{specifications,jdbcType=VARCHAR},
+            unit = #{unit,jdbcType=VARCHAR},
+            number = #{number,jdbcType=INTEGER},
+            price = #{price,jdbcType=DECIMAL},
+            money = #{money,jdbcType=DECIMAL},
+            shipping_company = #{shippingCompany,jdbcType=VARCHAR},
+            invoice_no = #{invoiceNo,jdbcType=VARCHAR},
+            manufacturer = #{manufacturer,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from  material_input
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppPersonWxVisitMapper">
+
+
+    <select id="queryList" parameterType="com.ruoyi.system.dto.AppPersonWxYuJianVisitDTO"
+            resultType="com.ruoyi.system.vo.AppPersonQueryWxVO">
+        select
+        a.id,a.create_by,a.create_time,a.destination,a.destination_dept_name,a.appointment_status,a.source,a.symptoms,a.telphone,a.type,
+        a.xcx_open_id,a.is_visit,a.person_id,
+        a.visit_name, a.visit_phonenumber,a.visit_start_time,a.visit_time,a.visit_remark, b.person_name, b.mobile,
+        b.id_num from app_person_wx_visit a
+        left join app_person b on a.person_id = b.person_id
+        where 1=1
+        <if test="queryDTO.personName!=null">
+            and b.person_name like CONCAT('%',#{queryDTO.personName},'%')
+        </if>
+        <if test="queryDTO.mobile!=null">
+            and b.mobile like CONCAT('%',#{queryDTO.mobile},'%')
+        </if>
+        <if test="queryDTO.idNum!=null">
+            and b.id_num like CONCAT('%',#{queryDTO.idNum},'%')
+        </if>
+        <if test="queryDTO.startTime!=null and queryDTO.startTime!=''">
+            <![CDATA[   and DATE_FORMAT(a.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{queryDTO.startTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="queryDTO.endTime!=null and queryDTO.endTime!=''">
+            <![CDATA[  and DATE_FORMAT(a.create_time, '%Y-%m-%d') <= DATE_FORMAT(#{queryDTO.endTime}, '%Y-%m-%d')    ]]>
+        </if>
+        <if test="queryDTO.destination!=null and queryDTO.destination!=''">
+            and a.destination like CONCAT('%',#{queryDTO.destination},'%')
+        </if>
+        <if test="queryDTO.phonenumber!=null">
+            and a.visit_phonenumber = #{queryDTO.phonenumber}
+        </if>
+        <if test="queryDTO.appPersonWxId!=null">
+            and a.app_person_wx_id = #{queryDTO.appPersonWxId}
+        </if>
+        order by a.create_time desc
+    </select>
+    <select id="queryIdListById" resultType="java.lang.Long">
+        select a.id
+        from app_person_wx_visit a
+                 left join app_person b on a.person_id = b.person_id
+        where a.app_person_wx_id = #{id}
+        order by a.create_time desc LIMIT 1
+    </select>
+</mapper>

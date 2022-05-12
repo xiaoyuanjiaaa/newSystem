@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.MaterialClassificationMapper">
+   <resultMap id="BaseResultMap" type="com.ruoyi.system.entity.MaterialClassification" >
+       <result column="kind_code" property="kindCode" />
+       <result column="pre_code" property="preCode" />
+       <result column="storage_code" property="storageCode" />
+       <result column="kind_name" property="kindName" />
+       <result column="spell_code" property="spellCode" />
+       <result column="web_code" property="webCode" />
+       <result column="custom_code" property="customCode" />
+       <result column="gb_code" property="gbCode" />
+       <result column="effect_area" property="effectArea" />
+       <result column="effect_dept" property="effectDept" />
+       <result column="batch_flag" property="batchFlag" />
+       <result column="validdate_flag" property="validdateFlag" />
+       <result column="valid_flag" property="validFlag" />
+       <result column="account_code" property="accountCode" />
+       <result column="account_name" property="accountName" />
+       <result column="order_no" property="orderNo" />
+       <result column="finance_flag" property="financeFlag" />
+       <result column="memo" property="memo" />
+       <result column="oper_code" property="operCode" />
+       <result column="oper_date" property="operDate" />
+       <result column="status" property="status" />
+   </resultMap>
+
+    <select id="selectListByWrapper" resultMap="BaseResultMap">
+        select a.*,if(b.id,1,2) as status from material_classification a
+        LEFT JOIN material_classification_mapping b ON a.kind_code = b.kind_code
+        <where>
+            <if test="kindName != null "> and a.kind_name like concat('%', #{kindName}, '%')</if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="com.ruoyi.system.entity.MaterialClassification">
+        INSERT INTO material_classification (
+            kind_code,
+            pre_code,
+            storage_code,
+            kind_name,
+            spell_code,
+            web_code,
+            custom_code,
+            gb_code,
+            effect_area,
+            effect_dept,
+            batch_flag,
+            validdate_flag,
+            valid_flag,
+            account_code,
+            account_name,
+            order_no,
+            finance_flag,
+            memo,
+            oper_code,
+            oper_date
+        )VALUES(
+            #{kindCode},
+            #{preCode},
+            #{storageCode},
+            #{kindName},
+            #{spellCode},
+            #{webCode},
+            #{customCode},
+            #{gbCode},
+            #{effectArea},
+            #{effectDept},
+            #{batchFlag},
+            #{validdateFlag},
+            #{validFlag},
+            #{accountCode},
+            #{accountName},
+            #{orderNo},
+            #{financeFlag},
+            #{memo},
+            #{operCode},
+            #{operDate}
+            );
+    </insert>
+
+    <update id="updateMaterial" parameterType="com.ruoyi.system.entity.MaterialClassification">
+        UPDATE material_classification
+        SET
+            <if test="preCode != null and preCode != ''">pre_code = #{preCode}, </if>
+            <if test="storageCode != null and storageCode != ''">storage_code = #{storageCode}, </if>
+            <if test="kindName != null and kindName != ''"> kind_name = #{kindName}, </if>
+            <if test="spellCode != null and spellCode != ''"> spell_code = #{spellCode}, </if>
+            <if test="webCode != null and webCode != ''"> web_code = #{webCode}, </if>
+            <if test="customCode != null and customCode != ''"> custom_code = #{customCode}, </if>
+            <if test="gbCode != null and gbCode != ''"> gb_code = #{gbCode}, </if>
+            <if test="effectArea != null and effectArea != ''"> effect_area = #{effectArea}, </if>
+            <if test="effectDept != null and effectDept != ''"> effect_dept = #{effectDept}, </if>
+            <if test="batchFlag != null and batchFlag != ''"> batch_flag = #{batchFlag}, </if>
+            <if test="validdateFlag != null and validdateFlag != ''"> validdate_flag = #{validdateFlag}, </if>
+            <if test="validFlag != null and validFlag != ''"> valid_flag = #{validFlag}, </if>
+            <if test="accountCode != null and accountCode != ''"> account_code = #{accountCode}, </if>
+            <if test="accountName != null and accountName != ''"> account_name = #{accountName}, </if>
+            <if test="orderNo != null and orderNo != 0"> order_no = #{orderNo}, </if>
+            <if test="financeFlag != null and financeFlag != ''"> finance_flag = #{financeFlag}, </if>
+            <if test="memo != null and memo != ''"> memo = #{memo}, </if>
+            <if test="operCode != null and operCode != ''"> oper_code = #{operCode}, </if>
+            <if test="operDate != null and operDate != ''"> oper_date = #{operDate} </if>
+        WHERE
+            `kind_code` = #{kindCode};
+    </update>
+
+    <select id="getOneByCode" resultType="com.ruoyi.system.entity.MaterialClassification">
+        select * from material_classification where kind_code = #{kindCode}
+    </select>
+
+    <delete id="delByCode">
+        delete from material_classification where kind_code = #{kindCode}
+    </delete>
+
+
+    <select id="getDown" resultType="com.ruoyi.system.entity.MaterialClassification">
+        SELECT a.kind_code,a.kind_name from material_classification AS a inner JOIN material_classification_mapping AS b ON a.kind_code = b.kind_code
+    </select>
+</mapper>

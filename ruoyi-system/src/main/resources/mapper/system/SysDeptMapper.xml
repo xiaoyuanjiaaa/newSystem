@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysDeptMapper">
+
+	<resultMap type="com.ruoyi.common.core.domain.entity.SysDept" id="SysDeptResult">
+		<id     property="deptId"     column="dept_id"     />
+		<result property="parentId"   column="parent_id"   />
+		<result property="ancestors"  column="ancestors"   />
+		<result property="deptName"   column="dept_name"   />
+		<result property="orderNum"   column="order_num"   />
+		<result property="leaderId"     column="leader_id" />
+		<result property="leader"     column="leader"      />
+		<result property="phone"      column="phone"       />
+		<result property="email"      column="email"       />
+		<result property="status"     column="status"      />
+		<result property="delFlag"    column="del_flag"    />
+		<result property="parentName" column="parent_name" />
+		<result property="createBy"   column="create_by"   />
+		<result property="createTime" column="create_time" />
+		<result property="updateBy"   column="update_by"   />
+		<result property="updateTime" column="update_time" />
+	</resultMap>
+
+	<sql id="selectDeptVo">
+        select d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader_id,d.leader, d.phone, d.email, d.status, d.del_flag, d.create_by, d.create_time, d.level
+        from sys_dept d
+    </sql>
+
+	<select id="selectDeptList" parameterType="com.ruoyi.common.core.domain.entity.SysDept" resultMap="SysDeptResult">
+        <include refid="selectDeptVo"/>
+        where d.del_flag = '0'
+        <if test="parentId != null and parentId != 0">
+			AND parent_id = #{parentId}
+		</if>
+		<if test="deptName != null and deptName != ''">
+			AND dept_name like concat('%', #{deptName}, '%')
+		</if>
+		<choose>
+			<when test="status != null and status != ''">
+				AND status = #{status}
+			</when>
+			<otherwise>
+				AND status = '0'
+			</otherwise>
+		</choose>
+		<if test="phone != null and phone != ''">
+			AND phone like concat('%', #{phone}, '%')
+		</if>
+		<!-- 数据范围过滤 -->
+		${params.dataScope}
+		order by d.parent_id, d.order_num
+    </select>
+
+    <select id="selectDeptListByRoleId" resultType="Integer">
+		select d.dept_id
+		from sys_dept d
+            left join sys_role_dept rd on d.dept_id = rd.dept_id
+        where rd.role_id = #{roleId}
+            <if test="deptCheckStrictly">
+              and d.dept_id not in (select d.parent_id from sys_dept d inner join sys_role_dept rd on d.dept_id = rd.dept_id and rd.role_id = #{roleId})
+            </if>
+		order by d.parent_id, d.order_num
+	</select>
+
+    <select id="selectDeptById" parameterType="Long" resultMap="SysDeptResult">
+		<include refid="selectDeptVo"/>
+		where dept_id = #{deptId}
+	</select>
+
+    <select id="checkDeptExistUser" parameterType="Long" resultType="int">
+		select count(1) from sys_user where dept_id = #{deptId} and del_flag = '0'
+	</select>
+
+	<select id="hasChildByDeptId" parameterType="Long" resultType="int">
+		select count(1) from sys_dept
+		where del_flag = '0' and parent_id = #{deptId} limit 1
+	</select>
+
+	<select id="selectChildrenDeptById" parameterType="Long" resultMap="SysDeptResult">
+		select * from sys_dept where find_in_set(#{deptId}, ancestors)
+	</select>
+
+	<select id="selectNormalChildrenDeptById" parameterType="Long" resultType="int">
+		select count(*) from sys_dept where status = 0 and del_flag = '0' and find_in_set(#{deptId}, ancestors)
+	</select>
+
+	<select id="checkDeptNameUnique" resultMap="SysDeptResult">
+	    <include refid="selectDeptVo"/>
+		where dept_name=#{deptName} and parent_id = #{parentId} limit 1
+	</select>
+
+	<select id="listDepts" resultMap="SysDeptResult">
+	    <include refid="selectDeptVo"/>
+		${ew.customsqlsegment} and level = (select max(level) from sys_dept)
+	</select>
+
+	<select id="getYesData" parameterType="com.ruoyi.system.dto.AppHealthReportCountDTO"  resultType="com.ruoyi.system.entity.vo.HReport">
+		SELECT d.dept_name,COUNT(h.person_id) as HNumber
+		from
+		sys_dept as d
+		left join app_health_report as h
+		on d.dept_name = h.dept_name
+		<if test="currentDay!=null">
+			WHERE
+			to_days(h.report_time) = to_days(#{currentDay})
+			and d.status=0
+		</if>
+		GROUP BY d.dept_name
+		Order by d.dept_id
+	</select>
+	<select id="selectNoLevel"  resultType="com.ruoyi.common.core.domain.entity.SysDept">
+		select * from sys_dept where `level` &lt;&gt; 1
+	</select>
+
+    <select id="groupDeptComplete" parameterType="com.ruoyi.system.dto.AppHealthReportCountDTO" resultType="com.ruoyi.system.entity.vo.GroupCompleteNumber">
+		select sys_dept.dept_id as deptId,sys_dept.dept_name as deptName,
+		       count(distinct sys_user.person_id) as countUser ,
+		       count(distinct app_health_report.person_id) as userComplete
+		from sys_dept
+		left join sys_user on sys_dept.dept_id = sys_user.dept_id and sys_user.del_flag = 0 and sys_user.status = 0 and sys_dept.del_flag = 0 and sys_dept.status = 0
+		left join app_health_report on app_health_report.person_id = sys_user.person_id and app_health_report.create_time > #{countDTO.currentDay} and app_health_report.create_time &lt; #{countDTO.nextDay}
+		where 1=1
+		and level = (select max(level) from sys_dept)
+		<if test="countDTO.deptId!=null">
+			and sys_dept.dept_id = #{countDTO.deptId}
+		</if>
+		group by sys_dept.dept_id
+
+	</select>
+
+    <insert id="insertDept" parameterType="com.ruoyi.common.core.domain.entity.SysDept">
+ 		insert into sys_dept(
+ 			<if test="deptId != null and deptId != 0">dept_id,</if>
+ 			<if test="parentId != null and parentId != 0">parent_id,</if>
+ 			<if test="deptName != null and deptName != ''">dept_name,</if>
+ 			<if test="ancestors != null and ancestors != ''">ancestors,</if>
+ 			<if test="orderNum != null and orderNum != ''">order_num,</if>
+			<if test="leaderId != null and leaderId != ''">leader_id,</if>
+ 			<if test="leader != null and leader != ''">leader,</if>
+ 			<if test="phone != null and phone != ''">phone,</if>
+ 			<if test="email != null and email != ''">email,</if>
+ 			<if test="status != null">status,</if>
+ 			<if test="createBy != null and createBy != ''">create_by,</if>
+ 			<if test="level != null and level != ''">level,</if>
+ 			create_time
+ 		)values(
+ 			<if test="deptId != null and deptId != 0">#{deptId},</if>
+ 			<if test="parentId != null and parentId != 0">#{parentId},</if>
+ 			<if test="deptName != null and deptName != ''">#{deptName},</if>
+ 			<if test="ancestors != null and ancestors != ''">#{ancestors},</if>
+ 			<if test="orderNum != null and orderNum != ''">#{orderNum},</if>
+			<if test="leaderId != null and leaderId != ''">#{leaderId},</if>
+ 			<if test="leader != null and leader != ''">#{leader},</if>
+ 			<if test="phone != null and phone != ''">#{phone},</if>
+ 			<if test="email != null and email != ''">#{email},</if>
+ 			<if test="status != null">#{status},</if>
+ 			<if test="createBy != null and createBy != ''">#{createBy},</if>
+ 			<if test="level != null and level != ''">#{level},</if>
+ 			sysdate()
+ 		)
+	</insert>
+
+	<update id="updateDept" parameterType="com.ruoyi.common.core.domain.entity.SysDept">
+ 		update sys_dept
+ 		<set>
+ 			<if test="parentId != null and parentId != 0">parent_id = #{parentId},</if>
+ 			<if test="deptName != null and deptName != ''">dept_name = #{deptName},</if>
+ 			<if test="ancestors != null and ancestors != ''">ancestors = #{ancestors},</if>
+ 			<if test="orderNum != null and orderNum != ''">order_num = #{orderNum},</if>
+			<if test="leaderId != null">leader_id = #{leaderId},</if>
+ 			<if test="leader != null">leader = #{leader},</if>
+ 			<if test="phone != null">phone = #{phone},</if>
+ 			<if test="email != null">email = #{email},</if>
+ 			<if test="status != null and status != ''">status = #{status},</if>
+ 			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+ 			<if test="level != null and level != ''">level = #{level},</if>
+ 			update_time = sysdate()
+ 		</set>
+ 		where dept_id = #{deptId}
+	</update>
+
+	<update id="updateDeptChildren" parameterType="java.util.List">
+	    update sys_dept set ancestors =
+	    <foreach collection="depts" item="item" index="index"
+	        separator=" " open="case dept_id" close="end">
+	        when #{item.deptId} then #{item.ancestors}
+	    </foreach>
+	    where dept_id in
+	    <foreach collection="depts" item="item" index="index"
+	        separator="," open="(" close=")">
+	        #{item.deptId}
+	    </foreach>
+	</update>
+
+	<update id="updateDeptStatusNormal" parameterType="Long">
+ 	    update sys_dept set status = '0' where dept_id in
+ 	    <foreach collection="array" item="deptId" open="(" separator="," close=")">
+        	#{deptId}
+        </foreach>
+	</update>
+
+	<delete id="deleteDeptById" parameterType="Long">
+		delete from sys_dept where dept_id = #{deptId}
+	</delete>
+
+	<select id="selectDeptByLeaderId" parameterType="com.ruoyi.common.core.domain.entity.SysDept" resultMap="SysDeptResult">
+		select d.dept_id, d.parent_id, d.ancestors,d.leader_id, d.dept_name, d.order_num, d.leader, d.phone, d.email, d.status, d.del_flag, d.create_by, d.create_time, d.level
+		from sys_dept d
+		where d.status=0 and d.del_flag=0 and d.leader_id = #{leaderId}
+		limit 1
+	</select>
+</mapper>

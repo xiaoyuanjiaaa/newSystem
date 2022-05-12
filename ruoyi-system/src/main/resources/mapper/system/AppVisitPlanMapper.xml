@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppVisitPlanMapper">
+
+    <resultMap id="selectPDAResult"   type="HashMap">
+        <result property="personName" column="personName" jdbcType="VARCHAR" />
+        <result property="phone" column="phone" jdbcType="VARCHAR" />
+        <result property="idNum" column="idNum" jdbcType="VARCHAR"/>
+        <result property="qrcodecolor" column="qrcodecolor" jdbcType="VARCHAR"/>
+        <result property="createTime" column="createTime" jdbcType="VARCHAR"/>
+        <result property="destination" column="destination" jdbcType="VARCHAR"/>
+        <result property="reportTime" column="reportTime" jdbcType="VARCHAR"/>
+        <result property="destinationName" column="destinationName" jdbcType="VARCHAR"/>
+        <result property="appPersonWxId" column="appPersonWxId" jdbcType="VARCHAR"/>
+        <result property="yjfzcodeColor" column="yjfzcodeColor" jdbcType="VARCHAR"/>
+        <result property="entranceName" column="entranceName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="selectRecordResult"   type="HashMap">
+        <result property="idNum" column="idNum" jdbcType="VARCHAR" />
+        <result property="personName" column="personName" jdbcType="VARCHAR" />
+        <result property="mobile" column="mobile" jdbcType="VARCHAR" />
+        <result property="visitedPerson" column="visitedPerson" jdbcType="VARCHAR" />
+        <result property="createTime" column="createTime" jdbcType="VARCHAR" />
+        <result property="entranceName" column="entranceName" jdbcType="VARCHAR"/>
+        <result property="operate" column="operate" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getSymptomsByIdNum" resultType="com.ruoyi.system.vo.AppPersonVO">
+        select a.symptoms, b.person_id, b.id_num, b.person_name, b.mobile
+        from app_person_wx a
+        left join app_person b on a.person_id = b.person_id
+        where 1=1 and a.symptoms is not null
+            <if test="openId != null">
+                and a.open_id = #{openId}
+            </if>
+            <if test="idNum != null">
+                and b.id_num = #{idNum}
+            </if>
+
+        and to_days(a.create_time) = to_days(now())
+        order by a.create_time desc limit 1
+    </select>
+
+
+    <select id="selectProcessList" resultMap="selectPDAResult">
+        select plan.person_name as personName,
+        plan.mobile as phone,
+        person.id_num as idNum,
+        plan.qrcode_color  as qrcodecolor,
+        plan.app_person_wx_id as appPersonWxId,
+        plan.yjfzcode_color as yjfzcodeColor,
+        plan.entrance_name as entranceName,
+        date_format(plan.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        date_format(report.report_time,'%Y-%m-%d %H:%i:%s') as reportTime,
+        plan.destination_name as destinationName
+        from app_visit_plan as plan
+        left join app_person as person on plan.person_id = person.person_id
+        left join (SELECT
+        report.person_id as person_id,
+        report.report_name as report_name,
+        report.report_phone as report_phone,
+        date_format(report.report_time,'%Y-%m-%d %H:%i:%s') as report_time,
+        zyzt.chinese_value as work_status
+        FROM
+        app_health_report as report
+        LEFT JOIN (SELECT DISTINCT person_id,chinese_value,report_id FROM topic_data WHERE chinese_name = "体温检测情况" and report_id IS NOT NULL
+            ) AS twData ON twData.report_id = report.report_id
+        LEFT JOIN (SELECT DISTINCT person_id,chinese_value,report_id FROM topic_data WHERE detail_id = 21 and report_id IS NOT NULL ) AS zyzt ON zyzt.report_id = report.report_id
+        WHERE  (twData.chinese_value is not NULL or report.remark is not NULL)
+        GROUP BY report.person_id)  as report on report.report_phone=plan.mobile
+        <where>
+            plan.entrance_name is not null
+            <if test="appVisit.destinationId != null and appVisit.destinationId != '' ">
+                and plan.entrance = #{appVisit.destinationId}
+            </if>
+            <if test="appVisit.startTime != null and appVisit.startTime != ''">
+                <![CDATA[    and DATE_FORMAT(plan.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{appVisit.startTime}, '%Y-%m-%d')   ]]>
+            </if>
+            <if test="appVisit.endTime != null and appVisit.endTime != ''">
+                <![CDATA[    and DATE_FORMAT(#{appVisit.endTime}, '%Y-%m-%d')  >=   DATE_FORMAT(plan.create_time, '%Y-%m-%d')  ]]>
+            </if>
+        </where>
+        order by plan.create_time desc
+    </select>
+
+    <select id="countTotal" resultType="int">
+        select  COUNT(1) AS NUM
+        from (
+        select plan.person_name as personName,
+        plan.mobile as phone,
+        person.id_num as idNum,
+        plan.qrcode_color  as qrcodecolor,
+        plan.app_person_wx_id as appPersonWxId,
+        plan.yjfzcode_color as yjfzcodeColor,
+        plan.entrance_name as entranceName,
+        date_format(plan.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        date_format(report.report_time,'%Y-%m-%d %H:%i:%s') as reportTime,
+        plan.destination_name as destinationName
+        from app_visit_plan as plan
+        left join app_person as person on plan.person_id = person.person_id
+        left join (SELECT
+        report.person_id as person_id,
+        report.report_name as report_name,
+        report.report_phone as report_phone,
+        date_format(report.report_time,'%Y-%m-%d %H:%i:%s') as report_time,
+        zyzt.chinese_value as work_status
+        FROM
+        app_health_report as report
+        LEFT JOIN (SELECT DISTINCT person_id,chinese_value,report_id FROM topic_data WHERE chinese_name = "体温检测情况" and report_id IS NOT NULL  ) AS twData ON twData.report_id = report.report_id
+        LEFT JOIN (SELECT DISTINCT person_id,chinese_value,report_id FROM topic_data WHERE detail_id = 21 and report_id IS NOT NULL  ) AS zyzt ON zyzt.report_id = report.report_id
+        WHERE  (twData.chinese_value is not NULL or report.remark is not NULL)
+        GROUP BY report.person_id)  as report on report.report_phone=plan.mobile
+        <where>
+            plan.entrance_name is not null
+            <if test="appVisit.destinationId != null and appVisit.destinationId != '' ">
+                and plan.entrance = #{appVisit.destinationId}
+            </if>
+            <if test="appVisit.startTime != null and appVisit.startTime != ''">
+                <![CDATA[    and DATE_FORMAT(plan.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{appVisit.startTime}, '%Y-%m-%d')   ]]>
+            </if>
+            <if test="appVisit.endTime != null and appVisit.endTime != ''">
+                <![CDATA[    and DATE_FORMAT(#{appVisit.endTime}, '%Y-%m-%d')  >=   DATE_FORMAT(plan.create_time, '%Y-%m-%d')  ]]>
+            </if>
+        </where>
+        ) as tmp_count
+    </select>
+
+
+    <select id="getAppVisitPlanAll" resultMap="selectRecordResult">
+        select * from (
+            select
+            plan.id_num as idNum,
+            plan.person_name as personName,
+            plan.mobile as mobile,
+            date_format(plan.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+            plan.entrance_name as entranceName,
+            plan.create_by as visitedPerson
+            from app_visit_plan as plan
+            <where>
+                plan.entrance_name is not null
+                <if test="appVisit.idNum != null and appVisit.idNum != '' ">
+                    and plan.id_num like CONCAT('%',#{appVisit.idNum},'%')
+                </if>
+                <if test="appVisit.personName != null and appVisit.personName != ''">
+                    and plan.person_name like CONCAT('%',#{appVisit.personName},'%')
+                </if>
+                <if test="appVisit.phone != null and appVisit.phone != ''">
+                    and plan.mobile like CONCAT('%',#{appVisit.phone},'%')
+                </if>
+
+                <if test="appVisit.personId != null and appVisit.personId != '' ">
+                    and plan.person_id = #{appVisit.personId}
+                </if>
+
+                <if test="appVisit.startTime != null and appVisit.startTime != ''">
+                    <![CDATA[    and DATE_FORMAT(plan.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{appVisit.startTime}, '%Y-%m-%d')   ]]>
+                </if>
+                <if test="appVisit.endTime != null and appVisit.endTime != ''">
+                    <![CDATA[    and DATE_FORMAT(#{appVisit.endTime}, '%Y-%m-%d')  >=   DATE_FORMAT(plan.create_time, '%Y-%m-%d')  ]]>
+                </if>
+            </where>
+            UNION
+            SELECT
+            b.id_num as idNum,
+            b.person_name as personName,
+            b.mobile as mobile,
+            date_format(visit.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+            '医生到访确认' as visitedPerson,
+            visit.update_user_name as entranceName
+            FROM `app_person_wx_visit` as visit
+            left join app_person b on visit.person_id = b.person_id
+            <where>
+                is_visit = 2
+                <if test="appVisit.personName!=null">
+                    and b.person_name like CONCAT('%',#{appVisit.personName},'%')
+                </if>
+                <if test="appVisit.idNum!=null">
+                    and b.id_num like CONCAT('%',#{appVisit.idNum},'%')
+                </if>
+                <if test="appVisit.mobile!=null">
+                    and b.mobile like CONCAT('%',#{appVisit.mobile},'%')
+                </if>
+
+                <if test="appVisit.personId != null and appVisit.personId != '' ">
+                    and visit.person_id = #{appVisit.personId}
+                </if>
+                <if test="appVisit.startTime != null and appVisit.startTime != ''">
+                    <![CDATA[    and DATE_FORMAT(visit.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{appVisit.startTime}, '%Y-%m-%d')   ]]>
+                </if>
+                <if test="appVisit.endTime != null and appVisit.endTime != ''">
+                    <![CDATA[    and DATE_FORMAT(#{appVisit.endTime}, '%Y-%m-%d')  >=   DATE_FORMAT(visit.create_time, '%Y-%m-%d')  ]]>
+                </if>
+            </where>
+            UNION
+
+            SELECT
+            b.id_num as idNum,
+            b.person_name as personName,
+            b.mobile as mobile,
+            date_format(scan_log.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+            scan_log.entrance_name as visitedPerson,
+            '闸机扫码' as entranceName
+            FROM `sys_scan_log` as scan_log
+            left join app_person b on scan_log.id_num = b.id_num
+            <where>
+                1 = 1
+                <if test="appVisit.personName!=null">
+                    and b.person_name like CONCAT('%',#{appVisit.personName},'%')
+                </if>
+                <if test="appVisit.idNum!=null">
+                    and b.id_num like CONCAT('%',#{appVisit.idNum},'%')
+                </if>
+                <if test="appVisit.mobile!=null">
+                    and b.mobile like CONCAT('%',#{appVisit.mobile},'%')
+                </if>
+
+                <if test="appVisit.personId != null and appVisit.personId != '' ">
+                    and b.person_id = #{appVisit.personId}
+                </if>
+                <if test="appVisit.startTime != null and appVisit.startTime != ''">
+                    <![CDATA[    and DATE_FORMAT(scan_log.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{appVisit.startTime}, '%Y-%m-%d')   ]]>
+                </if>
+                <if test="appVisit.endTime != null and appVisit.endTime != ''">
+                    <![CDATA[    and DATE_FORMAT(#{appVisit.endTime}, '%Y-%m-%d')  >=   DATE_FORMAT(scan_log.create_time, '%Y-%m-%d')  ]]>
+                </if>
+            </where>
+
+        ) as temp Order by createTime
+    </select>
+
+    <select id="getAppVisitPlanAllCount" resultType="int">
+        select COUNT(1) from (
+        select
+        date_format(plan.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        plan.entrance_name as entranceName,
+        plan.visited_person as visitedPerson
+        from app_visit_plan as plan
+        <where>
+            plan.entrance_name is not null
+            <if test="appVisit.idNum != null and appVisit.idNum != '' ">
+                and plan.id_num like CONCAT('%',#{appVisit.idNum},'%')
+            </if>
+            <if test="appVisit.personName != null and appVisit.personName != ''">
+                and plan.person_name like CONCAT('%',#{appVisit.personName},'%')
+            </if>
+            <if test="appVisit.phone != null and appVisit.phone != ''">
+                and plan.mobile like CONCAT('%',#{appVisit.phone},'%')
+            </if>
+
+            <if test="appVisit.personId != null and appVisit.personId != '' ">
+                and plan.person_id = #{appVisit.personId}
+            </if>
+
+            <if test="appVisit.startTime != null and appVisit.startTime != ''">
+                <![CDATA[    and DATE_FORMAT(plan.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{appVisit.startTime}, '%Y-%m-%d')   ]]>
+            </if>
+            <if test="appVisit.endTime != null and appVisit.endTime != ''">
+                <![CDATA[    and DATE_FORMAT(#{appVisit.endTime}, '%Y-%m-%d')  >=   DATE_FORMAT(plan.create_time, '%Y-%m-%d')  ]]>
+            </if>
+        </where>
+        union
+        SELECT
+        date_format(visit.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        '医生确认' as entranceName,
+        visit.visit_name as visitedPerson
+        FROM `app_person_wx_visit` as visit
+        left join app_person b on visit.person_id = b.person_id
+        <where>
+            is_visit = 2
+            <if test="appVisit.personName!=null">
+                and b.person_name like CONCAT('%',#{appVisit.personName},'%')
+            </if>
+            <if test="appVisit.idNum!=null">
+                and b.id_num like CONCAT('%',#{appVisit.idNum},'%')
+            </if>
+            <if test="appVisit.mobile!=null">
+                and b.mobile like CONCAT('%',#{appVisit.mobile},'%')
+            </if>
+
+            <if test="appVisit.personId != null and appVisit.personId != '' ">
+                and visit.person_id = #{appVisit.personId}
+            </if>
+            <if test="appVisit.startTime != null and appVisit.startTime != ''">
+                <![CDATA[    and DATE_FORMAT(visit.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{appVisit.startTime}, '%Y-%m-%d')   ]]>
+            </if>
+            <if test="appVisit.endTime != null and appVisit.endTime != ''">
+                <![CDATA[    and DATE_FORMAT(#{appVisit.endTime}, '%Y-%m-%d')  >=   DATE_FORMAT(visit.create_time, '%Y-%m-%d')  ]]>
+            </if>
+        </where>
+        UNION
+        SELECT
+        date_format(scan_log.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+        '' as visitedPerson,
+        '闸机扫码' as entranceName
+        FROM `sys_scan_log` as scan_log
+        left join app_person b on scan_log.id_num = b.id_num
+        <where>
+            1 = 1
+            <if test="appVisit.personName!=null">
+                and b.person_name like CONCAT('%',#{appVisit.personName},'%')
+            </if>
+            <if test="appVisit.idNum!=null">
+                and b.id_num like CONCAT('%',#{appVisit.idNum},'%')
+            </if>
+            <if test="appVisit.mobile!=null">
+                and b.mobile like CONCAT('%',#{appVisit.mobile},'%')
+            </if>
+
+            <if test="appVisit.personId != null and appVisit.personId != '' ">
+                and b.person_id = #{appVisit.personId}
+            </if>
+            <if test="appVisit.startTime != null and appVisit.startTime != ''">
+                <![CDATA[    and DATE_FORMAT(scan_log.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{appVisit.startTime}, '%Y-%m-%d')   ]]>
+            </if>
+            <if test="appVisit.endTime != null and appVisit.endTime != ''">
+                <![CDATA[    and DATE_FORMAT(#{appVisit.endTime}, '%Y-%m-%d')  >=   DATE_FORMAT(scan_log.create_time, '%Y-%m-%d')  ]]>
+            </if>
+        </where>
+
+        ) as temp
+    </select>
+
+
+</mapper>

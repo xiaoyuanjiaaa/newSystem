@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppVisitRecordMapper">
+
+    <select id="getListNum" resultType="com.ruoyi.system.dto.AppVisitRecordNumDTO">
+        SELECT * from (SELECT COUNT(*)AS num,destination_name FROM app_visit_record  GROUP BY destination_name) AS app_visit_record GROUP BY num DESC LIMIT 5
+    </select>
+
+</mapper>

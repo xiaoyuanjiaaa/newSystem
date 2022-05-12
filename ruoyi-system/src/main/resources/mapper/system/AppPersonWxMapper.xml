@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppPersonWxMapper">
+    <select id="getInfo" parameterType="com.ruoyi.system.dto.AppPersonWxQueryDTO"
+            resultType="com.ruoyi.system.vo.AppPersonWxVO">
+        select a.*, b.person_name, b.mobile, b.id_num from app_person_wx a
+        left join app_person b on a.person_id = b.person_id
+        where 1=1
+        and to_days(a.create_time) = to_days(now())
+        <if test="queryDTO.personId!=null">
+            and a.person_id = #{queryDTO.personId}
+        </if>
+        <if test="queryDTO.type!=null and queryDTO.type==1">
+            and a.type = #{queryDTO.type}
+            and a.gzh_open_id = #{queryDTO.openId}
+        </if>
+        <if test="queryDTO.type!=null and queryDTO.type==2">
+            and a.type = #{queryDTO.type}
+            and a.xcx_open_id = #{queryDTO.openId}
+        </if>
+        order by a.id desc
+        limit 1;
+    </select>
+
+    <select id="queryList" parameterType="com.ruoyi.system.dto.AppPersonWxYuJianDTO"
+            resultType="com.ruoyi.system.vo.AppPersonQueryWxVO">
+        select
+        a.id,a.create_by,a.create_time,a.destination,a.destination_dept_name,a.appointment_status,a.source,a.symptoms,a.telphone,a.type,
+        a.xcx_open_id ,a.is_visit,a.person_id,
+        a.visit_name, a.visit_phonenumber,a.visit_start_time,a.visit_time,a.visit_remark, b.person_name, b.mobile,
+        b.id_num from app_person_wx a
+        left join app_person b on a.person_id = b.person_id
+        where 1=1
+        <if test="queryDTO.personName!=null">
+            and b.person_name like CONCAT('%',#{queryDTO.personName},'%')
+        </if>
+        <if test="queryDTO.mobile!=null">
+            and b.mobile like CONCAT('%',#{queryDTO.mobile},'%')
+        </if>
+        <if test="queryDTO.idNum!=null">
+            and b.id_num like CONCAT('%',#{queryDTO.idNum},'%')
+        </if>
+        <if test="queryDTO.startTime!=null and queryDTO.startTime!=''">
+            <![CDATA[   and DATE_FORMAT(a.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{queryDTO.startTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="queryDTO.endTime!=null and queryDTO.endTime!=''">
+            <![CDATA[  and DATE_FORMAT(a.create_time, '%Y-%m-%d') <= DATE_FORMAT(#{queryDTO.endTime}, '%Y-%m-%d')    ]]>
+        </if>
+        <if test="queryDTO.destination!=null and queryDTO.destination!=''">
+            and a.destination like CONCAT('%',#{queryDTO.destination},'%')
+        </if>
+        <if test="queryDTO.phonenumber!=null">
+            and a.visit_phonenumber = #{queryDTO.phonenumber}
+        </if>
+        <if test="queryDTO.flag==true or queryDTO.flag==null">
+            and a.xcx_open_id is null
+        </if>
+        <if test="queryDTO.flag==false">
+            and a.xcx_open_id is not null
+        </if>
+        order by a.create_time desc
+    </select>
+    <select id="getInfoByYear" resultType="com.ruoyi.system.vo.AppPersonWxVO">
+        select a.*, b.person_name, b.mobile, b.id_num from app_person_wx a
+        left join app_person b on a.person_id = b.person_id
+        where 1=1
+        and YEAR(a.create_time) = YEAR(now())
+        <if test="queryDTO.personId!=null">
+            and a.person_id = #{queryDTO.personId}
+        </if>
+        <if test="queryDTO.type!=null and queryDTO.type==1">
+            and a.type = #{queryDTO.type}
+            and a.gzh_open_id = #{queryDTO.openId}
+        </if>
+        <if test="queryDTO.type!=null and queryDTO.type==2">
+            and a.type = #{queryDTO.type}
+            and a.xcx_open_id = #{queryDTO.openId}
+        </if>
+        order by a.id desc
+        limit 1;
+    </select>
+    <select id="queryAll" resultType="cn.hutool.json.JSONObject">
+        select a.id,c.create_time as createTime,c.xcx_open_id as openId,c.appointment_status as
+        appointmentStatus,c.destination,c.symptoms,b.person_name as personName ,b.mobile ,b.id_num as
+        idNum,c.cId,a.destination,a.visit_name,a.visit_remark,a.visit_start_time,a.visit_phonenumber,a.is_assistant as isAssistant,a.patient_name as patientName,a.patient_num as patientNum,a.patent_relation as patentRelation,c.content,c.contact_history,c.risk_position,c.update_time,b.person_id,c.epidemic_history
+        from app_person_wx a
+        left join app_person b on a.person_id = b.person_id
+        left join
+        (select id as cId,app_person_wx_id ,max(create_time) as
+        create_time,symptoms,destination,appointment_status,xcx_open_id,destination_dept_name,content,contact_history,risk_position,
+        update_time,epidemic_history
+        from app_person_wx_visit
+        where 1 = 1
+        <if test="queryDTO.startTime!=null and queryDTO.startTime!=''">
+            <![CDATA[   and DATE_FORMAT(create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{queryDTO.startTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="queryDTO.endTime!=null and queryDTO.endTime!=''">
+            <![CDATA[  and DATE_FORMAT(create_time, '%Y-%m-%d') <= DATE_FORMAT(#{queryDTO.endTime}, '%Y-%m-%d')    ]]>
+        </if>
+        GROUP BY cId,app_person_wx_id ,symptoms,destination,appointment_status,xcx_open_id,destination_dept_name,content,contact_history,risk_position,
+        update_time,epidemic_history)
+        as c on c.app_person_wx_id = a.id
+        where 1=1
+        <if test="queryDTO.personName!=null">
+            and b.person_name like CONCAT('%',#{queryDTO.personName},'%')
+        </if>
+        <if test="queryDTO.mobile!=null">
+            and b.mobile like CONCAT('%',#{queryDTO.mobile},'%')
+        </if>
+        <if test="queryDTO.idNum!=null">
+            and b.id_num like CONCAT('%',#{queryDTO.idNum},'%')
+        </if>
+        <if test="queryDTO.startTime!=null and queryDTO.startTime!=''">
+            <![CDATA[   and DATE_FORMAT(a.create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{queryDTO.startTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="queryDTO.endTime!=null and queryDTO.endTime!=''">
+            <![CDATA[  and DATE_FORMAT(a.create_time, '%Y-%m-%d') <= DATE_FORMAT(#{queryDTO.endTime}, '%Y-%m-%d')    ]]>
+        </if>
+        <if test="queryDTO.destination!=null and queryDTO.destination!=''">
+            and a.destination like CONCAT('%',#{queryDTO.destination},'%')
+        </if>
+        <if test="queryDTO.phonenumber!=null">
+            and a.visit_phonenumber = #{queryDTO.phonenumber}
+        </if>
+        order by c.create_time desc
+    </select>
+    <select id="getJson" resultType="java.lang.Object">
+        select report_json from app_person_wx_visit
+        where id = #{cId}
+        <if test="startTime!=null and startTime!=''">
+            <![CDATA[   and DATE_FORMAT(create_time, '%Y-%m-%d')>=  DATE_FORMAT(#{startTime}, '%Y-%m-%d')   ]]>
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            <![CDATA[  and DATE_FORMAT(create_time, '%Y-%m-%d') <= DATE_FORMAT(#{endTime}, '%Y-%m-%d')    ]]>
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppPersonMapper">
+
+    <insert id="insertPersonOpenId">
+        insert into app_person_wx (person_id, open_id, create_time,  symptoms)
+        values (#{personId}, #{openId}, now(), #{symptoms})
+    </insert>
+
+    <update id="updatePersonOpenId">
+        update app_person_wx set open_id = #{openId} where person_id=#{personId}
+    </update>
+
+    <select id="getAppPersonByIdNum" resultType="com.ruoyi.system.vo.AppPersonVO">
+        select a.* from app_person a
+        where a.id_num is not null
+        <if test="startNum != null">
+            and a.id_num like concat(#{startNum},'%')
+        </if>
+        <if test="endNum != null">
+            and a.id_num like concat('%',#{endNum})
+        </if>
+        <if test="mobile != null">
+            and a.mobile = #{mobile}
+        </if>
+        order by person_id desc
+        limit 1
+    </select>
+    <select id="selectPersonOpenId" parameterType="string" resultType="java.lang.Integer">
+        seelect count(*) from app_peerson_wx where open_id=#{openId}
+    </select>
+
+    <select id="getList" parameterType="com.ruoyi.system.dto.AppPersonQueryDTO"
+            resultType="com.ruoyi.system.vo.AppPersonWxVO">
+        select ap.person_name,ap.mobile,ap.id_num,apw.* from app_person ap
+        JOIN app_person_wx apw on ap.person_id = apw.person_id
+        <where>
+            <if test="queryDTO.yjfzTime != null and queryDTO.yjfzTime != ''">
+                AND DATE_FORMAT(apw.create_time,'%Y-%m-%d') = #{queryDTO.yjfzTime}
+            </if>
+            <if test="queryDTO.personName != null and queryDTO.personName !=''">
+                and ap.person_name like concat('%',#{queryDTO.personName},'%')
+            </if>
+            <if test="queryDTO.mobile != null and queryDTO.mobile !=''">
+                and ap.mobile like concat('%',#{queryDTO.mobile},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getAppPersonByIdNumAndName" resultType="com.ruoyi.system.vo.AppPersonVO">
+        select a.* from app_person a
+        where a.id_num is not null
+        <if test="startNum != null">
+            and a.id_num like concat(#{startNum},'%')
+        </if>
+        <if test="endNum != null">
+            and a.id_num like concat('%',#{endNum})
+        </if>
+        <if test="name != null">
+            and a.person_name = #{name}
+        </if>
+        order by person_id desc
+        limit 1
+    </select>
+
+</mapper>

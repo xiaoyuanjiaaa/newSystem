@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppHealthReportMapper">
+    <resultMap id="BaseResultMap" type="com.ruoyi.system.entity.AppHealthReport">
+        <result column="report_id" property="reportId"/>
+        <result column="report_name" property="reportName"/>
+        <result column="report_phone" property="reportPhone"/>
+        <result column="report_company" property="reportCompany"/>
+        <result column="report_temperature" property="reportTemperature"/>
+        <result column="report_time" property="reportTime"/>
+        <result column="report_json" property="reportJson"/>
+        <result column="template_id" property="templateId"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="person_id" property="personId"/>
+        <result column="work_space" property="workSpace"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        report_id
+        ,
+       report_name,
+       report_phone,
+       report_company,
+       report_temperature,
+       report_time,
+       report_json,
+       template_id,
+       create_by,
+       create_time,
+       update_by,
+       update_time,
+       remark,
+       person_id
+    </sql>
+    <update id="updateByPersonId">
+        update
+            app_health_report
+        set report_name = #{reportName},
+            id_num = #{idNum}
+        where person_id = #{personId}
+    </update>
+
+    <select id="selectListByWrapper" resultType="com.ruoyi.system.vo.AppHealthReportQueryVO">
+        select report_id,
+               report_name,
+               report_phone,
+               report_company,
+               report_temperature,
+               app_health_report.sex,
+               other_symptoms,
+               myself_is_close_history,
+               family_is_close_history,
+               is_attention_pidemic,
+               location,
+               report_time,
+               report_json,
+               template_id,
+               app_health_report.person_id,
+               app_health_report.create_by,
+               app_health_report.create_time,
+               app_health_report.update_by,
+               app_health_report.update_time,
+               app_health_report.remark,
+               app_health_report.work_place,
+               app_health_report.frequency,
+               sd.dept_name,
+               sd.dept_id,
+               su.job_number,
+               app_health_report.vaccination,
+               app_health_report.first_stitch_time,
+               app_health_report.two_stitch_time,
+               app_health_report.not_vac_remark,
+               app_health_report.vaccination_url
+        from app_health_report
+                 left join sys_user su on app_health_report.person_id = su.person_id
+                 left join sys_dept sd on su.dept_id = sd.dept_id ${ew.customSqlSegment}
+    </select>
+
+    <delete id="deleteByPersonIds" parameterType="java.util.List">
+        delete from app_health_report
+        where
+        to_days(report_time) = to_days(now())
+        and person_id in
+        <foreach collection="list" item="personId" open="(" separator="," close=")">
+            #{personId}
+        </foreach>
+    </delete>
+
+    <select id="getInfoByPersonIdTwo" parameterType="long" resultType="com.ruoyi.system.entity.AppHealthReport">
+        select *
+        from app_health_report
+        where to_days(report_time) = to_days(now())
+          and person_id = #{personId}
+    </select>
+
+    <select id="selectForWeek" parameterType="long" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM app_health_report
+        WHERE YEARWEEK(date_format(report_time, '%Y-%m-%d')) = YEARWEEK(now())
+          and person_id = #{personId};
+    </select>
+    <select id="selectForMonth" parameterType="long" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM app_health_report
+        WHERE DATE_FORMAT(report_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+          and person_id = #{personId};
+    </select>
+
+    <select id="selectTodayList" resultType="com.ruoyi.system.entity.AppHealthReport">
+        select * from app_health_report where to_days(report_time) = to_days(now()) and person_id=#{personId}
+    </select>
+
+    <select id="getViewList" resultType="com.ruoyi.system.dto.AppHealthReportViewDTO">
+        SELECT * from (SELECT a.report_name, b.id_num,a.report_phone,a.report_temperature,b.qrcode_color FROM app_health_report a INNER JOIN app_person b ON a.person_id = b.person_id WHERE  a.report_temperature != '' and a.report_temperature>37.3 GROUP BY a.report_time DESC ) AS app_health_report  GROUP BY report_name
+    </select>
+</mapper>

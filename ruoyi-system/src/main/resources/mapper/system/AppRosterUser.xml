@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppRosterUserMapper">
+
+    <resultMap type="com.ruoyi.system.entity.AppRosterUser" id="AppRosterUserResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="rosterId"    column="roster_id"    />
+        <result property="rosterTime"    column="roster_time"    />
+        <result property="dutyId"    column="duty_id"    />
+        <result property="isDeleted"    column="is_deleted"    />
+        <result property="nikeName"    column="nike_name"    />
+    </resultMap>
+
+    <sql id="selectAppRosterUserVo">
+        select id, user_id, roster_id,roster_time,duty_id, is_deleted,nike_name from app_roster_user
+    </sql>
+
+
+<!--    <select id="selectListWrapper" resultType="com.ruoyi.system.vo.UserRosterVO">-->
+<!--        select aru.user_id,-->
+<!--               aru.nike_name,-->
+<!--               aru.roster_id,-->
+<!--               aru.roster_time,-->
+<!--               aru.duty_id,-->
+<!--               ad.duty_name,-->
+<!--               ar.roster_name-->
+<!--        from app_roster_user as aru-->
+<!--        left join app_duty as ad on aru.duty_id=ad.id-->
+<!--        left join app_roster as ar on aru.roster_id=ar.id ${ew.sqlSegment}-->
+<!--    </select>-->
+
+
+    <select id="selectListWrapper" resultType="com.ruoyi.system.vo.UserRosterVO">
+        select * from app_roster_user  ${ew.customsqlsegment}
+    </select>
+
+
+</mapper>

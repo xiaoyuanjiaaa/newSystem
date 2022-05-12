@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.MaterialOutputMapper">
+
+    <resultMap id="BaseResultMap" type="com.ruoyi.system.entity.MaterialOutput">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="output_no" jdbcType="VARCHAR" property="outputNo" />
+        <result column="output_date" jdbcType="VARCHAR" property="outputDate" />
+        <result column="finance_category" jdbcType="VARCHAR" property="financeCategory" />
+        <result column="material_name" jdbcType="VARCHAR" property="materialName" />
+        <result column="specifications" jdbcType="VARCHAR" property="specifications" />
+        <result column="unit" jdbcType="VARCHAR" property="unit" />
+        <result column="number" jdbcType="INTEGER" property="number" />
+        <result column="price" jdbcType="DECIMAL" property="price" />
+        <result column="money" jdbcType="DECIMAL" property="money" />
+        <result column="material_category" jdbcType="VARCHAR" property="materialCategory" />
+        <result column="instrument_name" jdbcType="VARCHAR" property="instrumentName" />
+        <result column="method" jdbcType="VARCHAR" property="method" />
+        <result column="is_charge" jdbcType="INTEGER" property="isCharge" />
+        <result column="is_highvalue" jdbcType="INTEGER" property="isHighvalue" />
+        <result column="is_once" jdbcType="INTEGER" property="isOnce" />
+        <result column="requisition_dept" jdbcType="VARCHAR" property="requisitionDept" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        id, output_no, output_date, finance_category, material_name, specifications, unit,
+  number, price, money, material_category, instrument_name, method, is_charge, is_highvalue,
+  is_once, requisition_dept
+    </sql>
+
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from material_output
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+
+    <insert id="insert" parameterType="com.ruoyi.system.entity.MaterialOutput">
+        insert into material_output (id, output_no, output_date,
+                                     finance_category, material_name, specifications,
+                                     unit, number, price,
+                                     money, material_category, instrument_name,
+                                     method, is_charge, is_highvalue,
+                                     is_once, requisition_dept)
+        values (#{id,jdbcType=BIGINT}, #{outputNo,jdbcType=VARCHAR}, #{outputDate,jdbcType=VARCHAR},
+                #{financeCategory,jdbcType=VARCHAR}, #{materialName,jdbcType=VARCHAR}, #{specifications,jdbcType=VARCHAR},
+                #{unit,jdbcType=VARCHAR}, #{number,jdbcType=INTEGER}, #{price,jdbcType=DECIMAL},
+                #{money,jdbcType=DECIMAL}, #{materialCategory,jdbcType=VARCHAR}, #{instrumentName,jdbcType=VARCHAR},
+                #{method,jdbcType=VARCHAR}, #{isCharge,jdbcType=INTEGER}, #{isHighvalue,jdbcType=INTEGER},
+                #{isOnce,jdbcType=INTEGER}, #{requisitionDept,jdbcType=VARCHAR})
+    </insert>
+
+
+    <insert id="insertDynamic" parameterType="com.ruoyi.system.entity.MaterialOutput">
+        insert into material_output
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="outputNo != null">
+                output_no,
+            </if>
+            <if test="outputDate != null">
+                output_date,
+            </if>
+            <if test="financeCategory != null">
+                finance_category,
+            </if>
+            <if test="materialName != null">
+                material_name,
+            </if>
+            <if test="specifications != null">
+                specifications,
+            </if>
+            <if test="unit != null">
+                unit,
+            </if>
+            <if test="number != null">
+                number,
+            </if>
+            <if test="price != null">
+                price,
+            </if>
+            <if test="money != null">
+                money,
+            </if>
+            <if test="materialCategory != null">
+                material_category,
+            </if>
+            <if test="instrumentName != null">
+                instrument_name,
+            </if>
+            <if test="method != null">
+                method,
+            </if>
+            <if test="isCharge != null">
+                is_charge,
+            </if>
+            <if test="isHighvalue != null">
+                is_highvalue,
+            </if>
+            <if test="isOnce != null">
+                is_once,
+            </if>
+            <if test="requisitionDept != null">
+                requisition_dept,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="outputNo != null">
+                #{outputNo,jdbcType=VARCHAR},
+            </if>
+            <if test="outputDate != null">
+                #{outputDate,jdbcType=VARCHAR},
+            </if>
+            <if test="financeCategory != null">
+                #{financeCategory,jdbcType=VARCHAR},
+            </if>
+            <if test="materialName != null">
+                #{materialName,jdbcType=VARCHAR},
+            </if>
+            <if test="specifications != null">
+                #{specifications,jdbcType=VARCHAR},
+            </if>
+            <if test="unit != null">
+                #{unit,jdbcType=VARCHAR},
+            </if>
+            <if test="number != null">
+                #{number,jdbcType=INTEGER},
+            </if>
+            <if test="price != null">
+                #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="money != null">
+                #{money,jdbcType=DECIMAL},
+            </if>
+            <if test="materialCategory != null">
+                #{materialCategory,jdbcType=VARCHAR},
+            </if>
+            <if test="instrumentName != null">
+                #{instrumentName,jdbcType=VARCHAR},
+            </if>
+            <if test="method != null">
+                #{method,jdbcType=VARCHAR},
+            </if>
+            <if test="isCharge != null">
+                #{isCharge,jdbcType=INTEGER},
+            </if>
+            <if test="isHighvalue != null">
+                #{isHighvalue,jdbcType=INTEGER},
+            </if>
+            <if test="isOnce != null">
+                #{isOnce,jdbcType=INTEGER},
+            </if>
+            <if test="requisitionDept != null">
+                #{requisitionDept,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+
+    <update id="updateDynamic" parameterType="com.ruoyi.system.entity.MaterialOutput">
+        update material_output
+        <set>
+            <if test="outputNo != null">
+                output_no = #{outputNo,jdbcType=VARCHAR},
+            </if>
+            <if test="outputDate != null">
+                output_date = #{outputDate,jdbcType=VARCHAR},
+            </if>
+            <if test="financeCategory != null">
+                finance_category = #{financeCategory,jdbcType=VARCHAR},
+            </if>
+            <if test="materialName != null">
+                material_name = #{materialName,jdbcType=VARCHAR},
+            </if>
+            <if test="specifications != null">
+                specifications = #{specifications,jdbcType=VARCHAR},
+            </if>
+            <if test="unit != null">
+                unit = #{unit,jdbcType=VARCHAR},
+            </if>
+            <if test="number != null">
+                number = #{number,jdbcType=INTEGER},
+            </if>
+            <if test="price != null">
+                price = #{price,jdbcType=DECIMAL},
+            </if>
+            <if test="money != null">
+                money = #{money,jdbcType=DECIMAL},
+            </if>
+            <if test="materialCategory != null">
+                material_category = #{materialCategory,jdbcType=VARCHAR},
+            </if>
+            <if test="instrumentName != null">
+                instrument_name = #{instrumentName,jdbcType=VARCHAR},
+            </if>
+            <if test="method != null">
+                method = #{method,jdbcType=VARCHAR},
+            </if>
+            <if test="isCharge != null">
+                is_charge = #{isCharge,jdbcType=INTEGER},
+            </if>
+            <if test="isHighvalue != null">
+                is_highvalue = #{isHighvalue,jdbcType=INTEGER},
+            </if>
+            <if test="isOnce != null">
+                is_once = #{isOnce,jdbcType=INTEGER},
+            </if>
+            <if test="requisitionDept != null">
+                requisition_dept = #{requisitionDept,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+
+    <update id="update" parameterType="com.ruoyi.system.entity.MaterialOutput">
+        update material_output
+        set output_no = #{outputNo,jdbcType=VARCHAR},
+            output_date = #{outputDate,jdbcType=VARCHAR},
+            finance_category = #{financeCategory,jdbcType=VARCHAR},
+            material_name = #{materialName,jdbcType=VARCHAR},
+            specifications = #{specifications,jdbcType=VARCHAR},
+            unit = #{unit,jdbcType=VARCHAR},
+            number = #{number,jdbcType=INTEGER},
+            price = #{price,jdbcType=DECIMAL},
+            money = #{money,jdbcType=DECIMAL},
+            material_category = #{materialCategory,jdbcType=VARCHAR},
+            instrument_name = #{instrumentName,jdbcType=VARCHAR},
+            method = #{method,jdbcType=VARCHAR},
+            is_charge = #{isCharge,jdbcType=INTEGER},
+            is_highvalue = #{isHighvalue,jdbcType=INTEGER},
+            is_once = #{isOnce,jdbcType=INTEGER},
+            requisition_dept = #{requisitionDept,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from  material_output
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="getSumNumber" resultType="com.ruoyi.system.entity.MaterialOutput">
+        SELECT b.id,a.material_name, a.material_category,a.specifications,AVG(a.NUMBER) AS number FROM material_output as a LEFT JOIN material_supplies as b  ON a.material_name = b.material_name and a.specifications = b.specifications  WHERE  DATE_SUB(CURDATE(), INTERVAL #{evaluateDays} DAY) GROUP BY a.material_name , a.specifications
+    </select>
+
+    <select id="getMaxNumber" resultType="java.lang.Long">
+        SELECT MAX(number) from (SELECT output_date,SUM(number) as number from material_output WHERE DATE_SUB(CURDATE(), INTERVAL #{evaluateDays} DAY) &lt;= date(output_date) and material_name =  #{materialName} and specifications = #{specifications}  GROUP BY output_date)  material
+    </select>
+
+    <select id="getOutputNumber" resultType="com.ruoyi.system.entity.vo.MaterialOutputVo">
+        SELECT id, output_date, SUM(number) as number from material_output WHERE DATE_SUB(CURDATE(), INTERVAL #{evaluateDays} DAY) &lt;= date(output_date) and material_name = #{materialName} and specifications = #{specifications}  GROUP BY output_date
+    </select>
+
+    <select id="getOutputDate" resultType="com.ruoyi.system.entity.MaterialOutput">
+        SELECT id, output_date, SUM(number) as number from material_output WHERE DATE_SUB(CURDATE(), INTERVAL #{evaluateDays} DAY) &lt;= date(output_date) and material_name = #{materialName} and specifications = #{specifications} and output_date = #{outputDate}
+    </select>
+
+    <select id="getOneOutputAvgNumer" resultType="com.ruoyi.system.entity.MaterialOutput">
+        SELECT id,output_no,output_date,finance_category,material_name,specifications,unit,SUM(number) AS number FROM material_output WHERE DATE_SUB(CURDATE(), INTERVAL #{evaluateDays} DAY) &lt;= date(output_date) and material_name = #{materialName} and specifications = #{specifications} GROUP BY material_name,specifications
+    </select>
+
+    <select id="getOutputSumNumber" resultType="com.ruoyi.system.entity.MaterialOutput">
+        SELECT id,output_no,output_date,finance_category,material_name,specifications,unit,MAX(number) AS number FROM material_output WHERE DATE_SUB(CURDATE(), INTERVAL #{evaluateDays} DAY) &lt;= date(output_date) and material_name = #{materialName} and specifications = #{specifications} GROUP BY material_name,specifications
+    </select>
+
+</mapper>

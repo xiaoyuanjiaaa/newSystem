@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.MaterialThresholdMapper">
+
+    <resultMap type="com.ruoyi.system.entity.MaterialThreshold" id="MaterialThresholdResult">
+        <result property="id"    column="id"    />
+        <result property="thresholdName"    column="threshold_name"    />
+        <result property="safetyReserve"    column="safety_reserve"    />
+        <result property="evaluateStandard"    column="evaluate_standard"    />
+        <result property="reserveDays"    column="reserve_days"    />
+        <result property="courtyardName"    column="courtyard_name"    />
+        <result property="evaluateDays"    column="evaluate_days"    />
+    </resultMap>
+
+    <sql id="selectMaterialThresholdVo">
+        select id, threshold_name, safety_reserve, evaluate_standard, reserve_days, courtyard_name, evaluate_days from material_threshold
+    </sql>
+
+    <select id="selectMaterialThresholdList" parameterType="com.ruoyi.system.entity.MaterialThreshold" resultMap="MaterialThresholdResult">
+        <include refid="selectMaterialThresholdVo"/>
+        <where>
+            <if test="thresholdName != null  and thresholdName != ''"> and threshold_name like concat('%', #{thresholdName}, '%')</if>
+            <if test="safetyReserve != null "> and safety_reserve = #{safetyReserve}</if>
+            <if test="evaluateStandard != null  and evaluateStandard != ''"> and evaluate_standard = #{evaluateStandard}</if>
+            <if test="reserveDays != null "> and reserve_days = #{reserveDays}</if>
+            <if test="courtyardName != null  and courtyardName != ''"> and courtyard_name like concat('%', #{courtyardName}, '%')</if>
+            <if test="evaluateDays != null "> and evaluate_days = #{evaluateDays}</if>
+        </where>
+    </select>
+
+    <select id="selectMaterialThresholdById" parameterType="Long" resultMap="MaterialThresholdResult">
+        <include refid="selectMaterialThresholdVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertMaterialThreshold" parameterType="com.ruoyi.system.entity.MaterialThreshold">
+        insert into material_threshold
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="thresholdName != null">threshold_name,</if>
+            <if test="safetyReserve != null">safety_reserve,</if>
+            <if test="evaluateStandard != null">evaluate_standard,</if>
+            <if test="reserveDays != null">reserve_days,</if>
+            <if test="courtyardName != null">courtyard_name,</if>
+            <if test="evaluateDays != null">evaluate_days,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="thresholdName != null">#{thresholdName},</if>
+            <if test="safetyReserve != null">#{safetyReserve},</if>
+            <if test="evaluateStandard != null">#{evaluateStandard},</if>
+            <if test="reserveDays != null">#{reserveDays},</if>
+            <if test="courtyardName != null">#{courtyardName},</if>
+            <if test="evaluateDays != null">#{evaluateDays},</if>
+        </trim>
+    </insert>
+
+    <update id="updateMaterialThreshold" parameterType="com.ruoyi.system.entity.MaterialThreshold">
+        update material_threshold
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="thresholdName != null">threshold_name = #{thresholdName},</if>
+            <if test="safetyReserve != null">safety_reserve = #{safetyReserve},</if>
+            <if test="evaluateStandard != null">evaluate_standard = #{evaluateStandard},</if>
+            <if test="reserveDays != null">reserve_days = #{reserveDays},</if>
+            <if test="courtyardName != null">courtyard_name = #{courtyardName},</if>
+            <if test="evaluateDays != null">evaluate_days = #{evaluateDays},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMaterialThresholdById" parameterType="Long">
+        delete from material_threshold where id = #{id}
+    </delete>
+
+    <delete id="deleteMaterialThresholdByIds" parameterType="String">
+        delete from material_threshold where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="insertNoOut" parameterType="com.ruoyi.system.entity.MaterialThreshold">
+        INSERT INTO material_threshold (
+            suppliers_id,
+            <if test="thresholdName!=null and thresholdName!=''">
+                threshold_name,
+            </if>
+            safety_reserve,
+            is_deleted,
+            is_all
+        )
+        VALUES
+            (
+                #{suppliersId},
+                <if test="thresholdName!=null and thresholdName!=''">
+                    #{thresholdName},
+                </if>
+                #{safetyReserve},
+                0,
+                #{isAll}
+            )
+    </insert>
+
+    <update id="updateNoOut" parameterType="com.ruoyi.system.entity.MaterialThreshold">
+        update material_threshold SET
+            safety_reserve = #{safetyReserve}
+        where id = #{id}
+    </update>
+
+    <insert id="add" parameterType="com.ruoyi.system.entity.MaterialThreshold">
+        INSERT INTO material_threshold (
+            suppliers_id,
+            threshold_name,
+            safety_reserve,
+            evaluate_standard,
+            reserve_days,
+            courtyard_name,
+            evaluate_days,
+            create_by,
+            update_by,
+            remark,
+            is_deleted,
+            is_all
+        )
+        VALUES
+            (
+                #{suppliersId},
+                #{thresholdName},
+                #{safetyReserve},
+                #{evaluateStandard},
+                #{reserveDays},
+                #{courtyardName},
+                #{evaluateDays},
+                #{createBy},
+                #{updateBy},
+                #{remark},
+                0,
+                #{isAll}
+            )
+    </insert>
+
+
+    <insert id="saveAll" parameterType="java.util.List">
+        INSERT INTO material_threshold ( suppliers_id, safety_reserve, evaluate_standard, reserve_days, evaluate_days, is_all )
+        VALUES
+        <foreach collection="materialThresholdList" item="item" index="index" separator=",">
+            (#{item.suppliersId},#{item.safetyReserve},#{item.evaluateStandard},#{item.reserveDays},#{item.evaluateDays},#{item.isAll})
+        </foreach>
+    </insert>
+
+    <update id="updateThreshold" parameterType="com.ruoyi.system.entity.MaterialThreshold">
+        UPDATE material_threshold
+        SET
+            safety_reserve = #{safetyReserve},
+            evaluate_standard = #{evaluateStandard},
+            reserve_days = #{reserveDays},
+            evaluate_days = #{evaluateDays}
+        WHERE
+            id = #{id};
+    </update>
+
+    <select id="getOneBuSuppliesId" resultType="com.ruoyi.system.entity.MaterialThreshold">
+        SELECT * from material_threshold WHERE suppliers_id = #{id}
+    </select>
+
+    <update id="del" parameterType="com.ruoyi.system.entity.MaterialThreshold">
+        UPDATE material_threshold
+        SET
+            is_deleted = 1
+        WHERE
+        id = #{id};
+    </update>
+
+    <select id="getOneById" resultType="com.ruoyi.system.entity.MaterialThreshold">
+        select * from material_threshold where  id = #{id}
+    </select>
+
+
+    <select id="getAllThreshold" resultType="com.ruoyi.system.entity.MaterialThreshold">
+        SELECT * from material_threshold WHERE threshold_name = '全局变量'
+    </select>
+
+    <update id="updateAllThreshold" >
+        UPDATE material_threshold SET
+            evaluate_standard = #{evaluateStandard},
+            reserve_days = #{reserveDays},
+            evaluate_days = #{evaluateDays}
+        WHERE
+          id = #{id}
+    </update>
+
+    <select id="getOne" resultType="com.ruoyi.system.entity.MaterialThreshold">
+        SELECT *,a.threshold_name FROM material_threshold a LEFT JOIN material_supplies b ON a.suppliers_id = b.id WHERE a.is_deleted=0 AND a.suppliers_id = #{id}
+    </select>
+
+    <insert id="bactchInsert" parameterType="java.util.List">
+        INSERT INTO material_threshold (
+            suppliers_id,
+            threshold_name,
+            safety_reserve,
+            evaluate_standard,
+            reserve_days,
+            courtyard_name,
+            evaluate_days,
+            create_by,
+            update_by,
+            remark,
+            is_deleted,
+            is_all
+        )
+        VALUES
+        <foreach collection="thresholdList" item="item" separator=",">
+            (
+            #{item.suppliersId,jdbcType=VARCHAR},
+            #{item.thresholdName,jdbcType=VARCHAR},
+            #{safetyReserve},
+            #{evaluateStandard},
+            #{reserveDays},
+            #{courtyardName},
+            #{evaluateDays},
+            #{createBy},
+            #{updateBy},
+            #{remark},
+            0,
+            #{isAll}
+            )
+        </foreach>
+    </insert>
+
+
+    <select id="getOneNoOutput" resultType="com.ruoyi.system.entity.MaterialThreshold">
+        select * from material_threshold where  suppliers_id = #{suppliersId}
+    </select>
+
+    <select id="getSuppliesThreshold" resultType="com.ruoyi.system.entity.vo.SuppliesThresholdVo">
+        SELECT a.id,a.material_name,a.specifications,a.number, b.safety_reserve, b.evaluate_days FROM material_supplies AS a  INNER JOIN	material_threshold AS b ON a.id = b.suppliers_id
+    </select>
+
+
+
+</mapper>

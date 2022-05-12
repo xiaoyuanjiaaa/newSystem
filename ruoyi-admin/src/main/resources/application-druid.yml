@@ -1,0 +1,139 @@
+spring:
+    datasource:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driverClassName: com.mysql.cj.jdbc.Driver
+        druid:
+            # 主库数据源
+            master:
+                url: jdbc:mysql://192.168.70.100:3306/yqfk?useUnicode=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+                username: root
+                password: 123456
+            # 从库数据源
+            slave:
+                # 从数据源开关/默认关闭
+                enabled: false
+                url:
+                username:
+                password:
+            # 初始连接数
+            initialSize: 5
+            # 最小连接池数量f
+            minIdle: 10
+            # 最大连接池数量
+            maxActive: 20
+            # 配置获取连接等待超时的时间
+            maxWait: 60000
+            # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+            timeBetweenEvictionRunsMillis: 60000
+            # 配置一个连接在池中最小生存的时间，单位是毫秒
+            minEvictableIdleTimeMillis: 300000
+            # 配置一个连接在池中最大生存的时间，单位是毫秒
+            maxEvictableIdleTimeMillis: 900000
+            # 配置检测连接是否有效
+            validationQuery: SELECT 1 FROM DUAL
+            testWhileIdle: true
+            testOnBorrow: false
+            testOnReturn: false
+            webStatFilter:
+                enabled: true
+            statViewServlet:
+                enabled: true
+                # 设置白名单，不填则允许所有访问
+                allow:
+                url-pattern: /druid/*
+                # 控制台管理用户名和密码
+                login-username: ruoyi
+                login-password: 123456
+            filter:
+                stat:
+                    enabled: true
+                    # 慢SQL记录
+                    log-slow-sql: true
+                    slow-sql-millis: 1000
+                    merge-sql: true
+                wall:
+                    config:
+                        multi-statement-allow: true
+
+    # redis 配置
+    redis:
+        # 地址
+        #host: 110.42.219.131
+        host: 192.168.70.100
+        # 端口，默认为6379
+        port: 6379
+        # 数据库索引
+        database: 6
+        # 密码
+        password: 123456
+#        password:
+        # 连接超时时间
+        timeout: 10s
+        lettuce:
+            pool:
+                # 连接池中的最小空闲连接
+                min-idle: 0
+                # 连接池中的最大空闲连接
+                max-idle: 8
+                # 连接池的最大数据库连接数
+                max-active: 8
+                # #连接池最大阻塞等待时间（使用负值表示没有限制）
+                max-wait: -1ms
+
+
+#卫健委接口相关参数
+wjw:
+    #  url: https://weijw.jszwfw.gov.cn/jkm/scanJsJkm
+    url: https://ht-zl.com/5h/jkm/
+    source: hospital_wuXiDiWu
+    position: 江苏省,无锡市,梁溪区,广瑞路1215号
+    token: nrj40iNUhzmw7tdJvEaxBh8iqGAEF20JnyhcxSmzjVXKkKRpHOD5qlMM+5cClCuy
+    verifierDept: 无锡市第五人民医院
+
+wy:
+    #    skIdService: http://39.107.63.190/skm_public/member/get
+    skIdService: http://223.112.133.206:38008/pubicApi/getWyQrCode
+    skAuth: skm_auth_wxdwrmyy
+    skAuthKey: c2ttMjAyMDEwd3h3eWhkaw==
+    skBodyKey: c2ttMjAyMDF3eHd5Ym9keQ==
+    skOrganizeLocation: 无锡市第五人民医院
+    skApplyType: 人行闸机通道
+
+gathering:
+    uploadPath: /Users/ComCtrl/Desktop/
+    pageSize: 20
+
+fdfs:
+    so-timeout: 1501
+    connect-timeout: 601
+    thumb-image:             #缩略图生成参数
+        width: 150
+        height: 150
+    web-server-url: 192.168.30.72
+    tracker-list: 192.168.30.72:22122
+
+wx:
+    appId: wxbcf441ff30b98641
+    appSecret: 802b45978b420dc38ea76b3191c7ef05
+
+smsZh:
+    sms:
+#        url: http://sms.zh-ink.com/api/sms/send
+        url: www.fakeData.com
+#        uid: wuyuan
+        uid: jianguo
+#        userPwd: 62c8ad0a15d9d1ca38d5dee762a16e01
+        userPwd: 62c8ad0a15d9d1ca38d5dee762a16e02
+        message: 【无锡五院】您今日的健康信息还未上报，请及时填写.....
+        ext: 111222
+
+#smsZh:
+#    sms:
+#        url: http://sms.zh-ink.com/api/sms/send
+#        uid: wuyuan
+#        userPwd: 62c8ad0a15d9d1ca38d5dee762a16e01
+#        message: 【无锡五院】您今日的健康信息还未上报，请及时填写
+#        ext: 111
+logoUrl : E:\image\logo.png
+
+uploadUrl: E:\test\

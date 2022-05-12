@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.UreportFileTblMapper">
+    
+    <resultMap type="com.ruoyi.system.entity.UreportFileTbl" id="UreportFileTblResult">
+        <id column="id_" jdbcType="BIGINT" property="id"/>
+        <result column="name_" jdbcType="VARCHAR" property="name"/>
+        <result column="content_" jdbcType="BLOB" property="content"/>
+        <result column="create_time_" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time_" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="selectUreportFileTblVo">
+        select id_, name_, content_, create_time_, update_time_ from ureport_file_tbl
+    </sql>
+
+    <select id="selectUreportFileTblList" parameterType="com.ruoyi.system.entity.UreportFileTbl" resultMap="UreportFileTblResult">
+        <include refid="selectUreportFileTblVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and name_ = #{name}</if>
+            <if test="content != null  and content != ''"> and content_ = #{content}</if>
+            <if test="createTime != null "> and create_time_ = #{createTime}</if>
+            <if test="updateTime != null "> and update_time_ = #{updateTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectUreportFileTblById" parameterType="Long" resultMap="UreportFileTblResult">
+        <include refid="selectUreportFileTblVo"/>
+        where id_ = #{id}
+    </select>
+        
+    <insert id="insertUreportFileTbl" parameterType="com.ruoyi.system.entity.UreportFileTbl" useGeneratedKeys="true" keyProperty="id">
+        insert into ureport_file_tbl
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name_,</if>
+            <if test="content != null">content_,</if>
+            <if test="createTime != null">create_time_,</if>
+            <if test="updateTime != null">update_time_,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="content != null">#{content},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateUreportFileTbl" parameterType="com.ruoyi.system.entity.UreportFileTbl">
+        update ureport_file_tbl
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name_ = #{name},</if>
+            <if test="content != null">content_ = #{content},</if>
+            <if test="createTime != null">create_time_ = #{createTime},</if>
+            <if test="updateTime != null">update_time_ = #{updateTime},</if>
+        </trim>
+        where id_ = #{id}
+    </update>
+
+    <delete id="deleteUreportFileTblById" parameterType="Long">
+        delete from ureport_file_tbl where id_ = #{id}
+    </delete>
+
+    <delete id="deleteUreportFileTblByIds" parameterType="String">
+        delete from ureport_file_tbl where id_ in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

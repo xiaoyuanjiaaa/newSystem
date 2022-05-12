@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.InpatientOrdersMapper">
+
+    <select id="getPageList" resultType="com.ruoyi.system.entity.vo.InpatientOrdersVo">
+        SELECT
+            a.id,
+            a.inpatient_no,
+            a.patient_no,
+            a.dept_code,
+            a.nurse_cell_code,
+            a.MO_ORDER ,
+            a.DOC_CODE,
+            a.DOC_NAME,
+            a.MO_DATE,
+            a.BABY_FLAG,
+            a.happen_no,
+            a.TYPE_NAME,
+            a.ITEM_NAME,
+            a.class_name,
+            a.exec_Dpnm,
+            a.base_Dose,
+            a.dose_Unit,
+            a.min_Unit,
+            a.price_Unit,
+            a.specs,
+            a.item_Price,
+            a.use_Name,
+            a.frequency_Code,
+            a.frequency_Name,
+            a.rec_Usercd,
+            a.dc_Name,
+            a.dc_Docnm,
+            a.dc_Usernm,
+            a.rec_Usernm,
+            a.confirm_Date,
+            b.name,
+            c.date,
+            c.time,
+            c.consciousness,
+            c.temperature,
+            c.pulse,
+            c.breathing,
+            c.blood_pressure,
+            c.spo2,
+            c.avpu_Score,
+            c.oxygen_inhalation,
+            c.pain,
+            c.input_Name,
+            c.input_Quantity,
+            c.output_Name,
+            c.output_Quantity
+        FROM
+            inpatient_orders AS a
+                INNER JOIN his_inpatient_info AS b ON a.INPATIENT_NO = b.INPATIENT_NO
+                INNER JOIN emr_sign_data AS c ON b.INPATIENT_NO = c.HISID
+        where a.is_deleted = 0
+        <if test="typeName!=null and typeName!=''">
+            and a.TYPE_NAME = #{typeName}
+        </if>
+        <if test="name!=null and name!=''">
+            and b.name  like concat('%', #{name}, '%')
+        </if>
+        <if test="pulse!=null and pulse!=''">
+            and c.pulse = #{pulse}
+        </if>
+        <if test="breathing!=null and breathing!=''">
+            and c.breathing = #{breathing}
+        </if>
+        <if test="bloodPressure!=null and bloodPressure!=''">
+            and c.blood_pressure = #{bloodPressure}
+        </if>
+        <if test="spo2!=null and spo2!=''">
+            and c.spo2 = #{spo2}
+        </if>
+        GROUP BY
+            a.id
+    </select>
+
+    <select id="getTypeName" resultType="com.ruoyi.system.entity.vo.InpatientOrdersTypeNameVo">
+        SELECT TYPE_NAME from inpatient_orders GROUP BY TYPE_NAME
+    </select>
+
+</mapper>

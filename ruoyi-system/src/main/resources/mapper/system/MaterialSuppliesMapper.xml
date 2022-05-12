@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.MaterialSuppliesMapper">
+
+    <resultMap type="com.ruoyi.system.entity.MaterialSupplies" id="MaterialSuppliesResult">
+        <result property="id"    column="id"    />
+        <result property="materialCategory"    column="material_category"    />
+        <result property="instrumentName"    column="instrument_name"    />
+        <result property="method"    column="method"    />
+        <result property="isHighvalue"    column="is_highvalue"    />
+        <result property="isOnce"    column="is_once"    />
+        <result property="materialName"    column="material_name"    />
+        <result property="specifications"    column="specifications"    />
+        <result property="unit"    column="unit"    />
+        <result property="number"    column="number"    />
+        <result property="monitorState"    column="monitor_state"    />
+    </resultMap>
+
+    <sql id="selectMaterialSuppliesVo">
+        select id, material_category, instrument_name, method, is_highvalue, is_once, material_name, specifications, unit, number, monitor_state from material_supplies
+    </sql>
+
+    <select id="selectMaterialSuppliesList" parameterType="com.ruoyi.system.entity.MaterialSupplies" resultMap="MaterialSuppliesResult">
+        <include refid="selectMaterialSuppliesVo"/>
+        <where>
+            <if test="materialCategory != null  and materialCategory != ''"> and material_category = #{materialCategory}</if>
+            <if test="instrumentName != null  and instrumentName != ''"> and instrument_name like concat('%', #{instrumentName}, '%')</if>
+            <if test="method != null  and method != ''"> and method = #{method}</if>
+            <if test="isHighvalue != null "> and is_highvalue = #{isHighvalue}</if>
+            <if test="isOnce != null "> and is_once = #{isOnce}</if>
+            <if test="materialName != null  and materialName != ''"> and material_name like concat('%', #{materialName}, '%')</if>
+            <if test="specifications != null  and specifications != ''"> and specifications = #{specifications}</if>
+            <if test="unit != null  and unit != ''"> and unit = #{unit}</if>
+            <if test="number != null "> and number = #{number}</if>
+            <if test="monitorState != null "> and monitor_state = #{monitorState}</if>
+        </where>
+    </select>
+
+    <select id="selectMaterialSuppliesById" parameterType="Long" resultMap="MaterialSuppliesResult">
+        <include refid="selectMaterialSuppliesVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertMaterialSupplies" parameterType="com.ruoyi.system.entity.MaterialSupplies">
+        insert into material_supplies
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="materialCategory != null">material_category,</if>
+            <if test="instrumentName != null">instrument_name,</if>
+            <if test="method != null">method,</if>
+            <if test="isHighvalue != null">is_highvalue,</if>
+            <if test="isOnce != null">is_once,</if>
+            <if test="materialName != null">material_name,</if>
+            <if test="specifications != null">specifications,</if>
+            <if test="unit != null">unit,</if>
+            <if test="number != null">number,</if>
+            <if test="monitorState != null">monitor_state,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="materialCategory != null">#{materialCategory},</if>
+            <if test="instrumentName != null">#{instrumentName},</if>
+            <if test="method != null">#{method},</if>
+            <if test="isHighvalue != null">#{isHighvalue},</if>
+            <if test="isOnce != null">#{isOnce},</if>
+            <if test="materialName != null">#{materialName},</if>
+            <if test="specifications != null">#{specifications},</if>
+            <if test="unit != null">#{unit},</if>
+            <if test="number != null">#{number},</if>
+            <if test="monitorState != null">#{monitorState},</if>
+        </trim>
+    </insert>
+
+    <update id="updateMaterialSupplies" parameterType="com.ruoyi.system.entity.MaterialSupplies">
+        update material_supplies
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="materialCategory != null">material_category = #{materialCategory},</if>
+            <if test="instrumentName != null">instrument_name = #{instrumentName},</if>
+            <if test="method != null">method = #{method},</if>
+            <if test="isHighvalue != null">is_highvalue = #{isHighvalue},</if>
+            <if test="isOnce != null">is_once = #{isOnce},</if>
+            <if test="materialName != null">material_name = #{materialName},</if>
+            <if test="specifications != null">specifications = #{specifications},</if>
+            <if test="unit != null">unit = #{unit},</if>
+            <if test="number != null">number = #{number},</if>
+            <if test="monitorState != null">monitor_state = #{monitorState},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMaterialSuppliesById" parameterType="Long">
+        delete from material_supplies where id = #{id}
+    </delete>
+
+    <delete id="deleteMaterialSuppliesByIds" parameterType="String">
+        delete from material_supplies where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="insertSupplies" parameterType="com.ruoyi.system.entity.MaterialSupplies">
+        INSERT INTO material_supplies (
+        material_category,
+        instrument_name,
+        method,
+        is_highvalue,
+        is_once,
+        material_name,
+        specifications,
+        unit,
+        number,
+        monitor_state,
+        create_time,
+        create_by,
+        update_time,
+        update_by,
+        remark,
+        manufacturer,
+        shipping_company,
+        is_deleted
+        )
+        VALUES
+        (
+        #{materialCategory},
+        #{instrumentName},
+        #{method},
+        #{isHighvalue},
+        #{isOnce},
+        #{materialName},
+        #{specifications},
+        #{unit},
+        #{number},
+        #{monitorState},
+        #{createTime},
+        #{createBy},
+        #{updateTime},
+        #{updateBy},
+        #{remark},
+        #{manufacturer},
+        #{shippingCompany},
+        0
+        );
+    </insert>
+
+
+    <update id="updateSupplies" parameterType="com.ruoyi.system.entity.MaterialSupplies">
+        UPDATE material_supplies
+        SET
+            <if test="materialCategory!=null and materialCategory!=''">material_category = #{materialCategory},</if>
+            <if test="instrumentName!=null and instrumentName!=''"> instrument_name = #{instrumentName},</if>
+            <if test="method!=null and method!=''">method = #{method},</if>
+            <if test="isHighvalue!=null and isHighvalue!=''">is_highvalue = #{isHighvalue},</if>
+            <if test="isOnce!=null and isOnce!=''">is_once = #{isOnce},</if>
+            <if test="materialName!=null and materialName!=''">material_name = #{materialName},</if>
+            <if test="specifications!=null and specifications!=''">specifications = #{specifications},</if>
+            <if test="unit!=null and unit!=''">unit = #{unit},</if>
+            <if test="number!=null and number!=''">number = #{number},</if>
+            <if test="monitorState!=null and monitorState!=''"> monitor_state = #{monitorState},</if>
+            <if test="updateTime!=null and updateTime!=''">update_time = #{updateTime},</if>
+            <if test="updateBy!=null and updateBy!=''">update_by = #{updateBy},</if>
+            <if test="remark!=null and remark!=''">remark = #{remark},</if>
+            <if test="manufacturer!=null and manufacturer!=''">manufacturer = #{manufacturer},</if>
+            <if test="shippingCompany!=null and shippingCompany!=''">shipping_company = #{shippingCompany}</if>
+        WHERE
+            id = #{id};
+    </update>
+
+    <update id="updateSendStatus" parameterType="java.lang.Long">
+        UPDATE  material_supplies
+        SET is_send = CASE is_send WHEN 0 THEN 1 WHEN 1 THEN 0 END WHERE id= #{id};
+    </update>
+
+    <update id="delSupplies">
+        UPDATE material_supplies
+        SET
+        is_deleted = 1
+        WHERE
+        id = #{id};
+    </update>
+
+
+    <select id="getMaterialInput" resultType="com.ruoyi.system.entity.MaterialInput">
+        SELECT
+            id,
+            input_no,
+            input_date,
+            material_category,
+            instrument_name,
+            method,
+            is_charge,
+            is_highvalue,
+            is_once,
+            finance_category,
+            material_name,
+            specifications,
+            unit,
+            SUM(number) AS number,
+            price,
+            money,
+            shipping_company,
+            invoice_no,
+            manufacturer
+        FROM
+            material_input
+        GROUP BY
+            specifications,
+            material_name DESC
+    </select>
+
+    <select id="getMaterialOutput" resultType="com.ruoyi.system.entity.MaterialOutput">
+        SELECT
+            id,
+            output_no,
+            output_date,
+            material_category,
+            instrument_name,
+            method,
+            is_charge,
+            is_highvalue,
+            is_once,
+            finance_category,
+            material_name,
+            specifications,
+            unit,
+            SUM(number) AS number,
+            price,
+            money
+        FROM
+            material_output
+        WHERE
+            material_name = #{materialName}
+          AND specifications = #{specifications}
+        GROUP BY
+            specifications,
+            material_name DESC
+    </select>
+
+    <select id="getOne" resultType="com.ruoyi.system.entity.MaterialSupplies">
+        SELECT
+            *
+        FROM
+            material_supplies
+        WHERE
+            material_name = #{materialName}
+          AND specifications =#{specifications}
+    </select>
+
+    <select id="getOneById" resultType="com.ruoyi.system.entity.MaterialSupplies">
+        select * from material_supplies where id = #{id}
+    </select>
+
+
+    <select id="getList" resultType="com.ruoyi.system.entity.MaterialSupplies">
+        SELECT
+        a.*
+        FROM
+        material_supplies AS a
+        left JOIN material_classification AS b ON a.material_category = b.kind_name
+        inner JOIN material_classification_mapping AS c ON b.kind_code = c.kind_code
+        WHERE
+        is_deleted = 0
+        <if test="kindName!=null and kindName!=''">
+           and  a.material_category = #{kindName}
+        </if>
+        <if test="materialName!=null and materialName!=''">
+           and  a.material_name LIKE CONCAT('%',#{materialName},'%')
+        </if>
+    </select>
+    <select id="getListOr" resultType="com.ruoyi.system.entity.MaterialSupplies">
+        SELECT
+        a.*
+        FROM
+        material_supplies AS a
+        inner JOIN material_classification AS b ON a.material_category = b.kind_name
+        left JOIN material_classification_mapping AS c ON b.kind_code = c.kind_code
+        WHERE
+        is_deleted = 0
+        <if test="kindName!=null and kindName!=''">
+            and  a.material_category = #{kindName}
+        </if>
+        <if test="materialName!=null and materialName!=''">
+            and  a.material_name LIKE CONCAT('%',#{materialName},'%')
+        </if>
+    </select>
+
+    <select id="evaluate" resultType="com.ruoyi.system.entity.vo.MaterialSuppliesVo">
+        SELECT a.id, a.material_category,a.material_name,a.number, b.safety_reserve,b.reserve_days,a.is_send FROM material_threshold AS b  LEFT JOIN	material_supplies AS a ON a.id = b.suppliers_id where a.id is not null
+        <if test="materialName!=null and materialName!=''">
+            and  a.material_name LIKE CONCAT('%',#{materialName},'%')
+        </if>
+    </select>
+
+    <select id="getWarnMaterial" resultType="java.lang.String">
+        SELECT  concat(a.material_name,'(',a.specifications,')') FROM material_threshold  b  LEFT JOIN	material_supplies a ON a.id = b.suppliers_id where  <![CDATA[a.number < b.safety_reserve]]> and a.is_send = 1
+    </select>
+
+
+    <select id="getMaterialReserveOutput" resultType="com.ruoyi.system.entity.MaterialOutput">
+        SELECT b.id, a.material_name, a.material_category,a.specifications,AVG(a.NUMBER) AS number FROM material_output as a LEFT JOIN material_supplies as b  ON a.material_name = b.material_name and a.specifications = b.specifications  WHERE  DATE_SUB(CURDATE(), INTERVAL #{evaluateDays} DAY) and b.id is not null
+        GROUP BY b.id
+    </select>
+
+
+    <select id="getMaterialStock" resultType="com.ruoyi.system.dto.MaterialSuppliesStockDTO">
+        SELECT a.id,a.material_name,a.number from material_supplies AS a LEFT JOIN material_classification AS b ON a.material_category = b.kind_name inner JOIN material_classification_mapping AS c ON b.kind_code = c.kind_code
+    </select>
+</mapper>

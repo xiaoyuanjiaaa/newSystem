@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.NucleicAcidMapper">
+
+
+    <select id="getCountList"  resultType="com.ruoyi.system.entity.NucleicAcid">
+        SELECT * from nucleic_acid WHERE patient_id not in (SELECT a.patient_id from nucleic_acid a inner JOIN nucleic_acid_record b on a.patient_id = b.patient_id WHERE a.result &lt;&gt; '阴性' group by a.patient_id ) and result &lt;&gt; '阴性' GROUP BY patient_id
+    </select>
+
+    <select id="getPageList"  resultType="com.ruoyi.system.entity.NucleicAcid">
+        SELECT * from nucleic_acid where entry_time between #{Monday} and #{Sunday} and type = #{type} GROUP BY patient_id HAVING count(patient_id) = 1
+    </select>
+
+
+    <select id="getNucleicAcid" resultType="com.ruoyi.system.entity.vo.NucleicAcidVo">
+        SELECT result FROM nucleic_acid WHERE type = 'nucleicAcid' GROUP BY result
+    </select>
+
+    <select id="getAntibody" resultType="com.ruoyi.system.entity.vo.NucleicAcidVo">
+        SELECT result FROM nucleic_acid WHERE type = 'antibody' GROUP BY result
+    </select>
+
+</mapper>

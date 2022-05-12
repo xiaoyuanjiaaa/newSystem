@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppChangeReportMapper">
+
+    <resultMap type="com.ruoyi.system.entity.AppChangeReport" id="AppChangeReportResult">
+        <result property="id"    column="id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="remark"    column="remark"    />
+        <result property="changeName"    column="change_name"    />
+        <result property="changePhone"    column="change_phone"    />
+        <result property="reportCompany"    column="report_company"    />
+        <result property="reportTemperature"    column="report_temperature"    />
+        <result property="changeTime"    column="change_time"    />
+        <result property="personId"    column="person_id"    />
+        <result property="deptName"    column="dept_name"    />
+        <result property="jobNumber"    column="job_number"    />
+        <result property="idNum"    column="id_num"    />
+        <result property="changeType"    column="change_type"    />
+        <result property="deptId"    column="dept_id"    />
+    </resultMap>
+
+    <sql id="selectAppChangeReportVo">
+        select id, create_time, create_by,dept_id, update_time, update_by, remark, change_name, change_phone, report_company, report_temperature, change_time, person_id, dept_name, job_number, id_num, change_type from app_change_report
+    </sql>
+
+    <select id="selectAppChangeReportList" parameterType="com.ruoyi.system.entity.AppChangeReport" resultMap="AppChangeReportResult">
+        <include refid="selectAppChangeReportVo"/>
+        <where>
+            <if test="changeName != null  and changeName != ''"> and change_name like concat('%', #{changeName}, '%')</if>
+            <if test="changePhone != null  and changePhone != ''"> and change_phone = #{changePhone}</if>
+            <if test="reportCompany != null  and reportCompany != ''"> and report_company = #{reportCompany}</if>
+            <if test="reportTemperature != null  and reportTemperature != ''"> and report_temperature = #{reportTemperature}</if>
+            <if test="changeTime != null "> and change_time = #{changeTime}</if>
+            <if test="personId != null "> and person_id = #{personId}</if>
+            <if test="deptName != null  and deptName != ''"> and dept_name like concat('%', #{deptName}, '%')</if>
+            <if test="jobNumber != null  and jobNumber != ''"> and job_number = #{jobNumber}</if>
+            <if test="idNum != null  and idNum != ''"> and id_num = #{idNum}</if>
+            <if test="changeType != null "> and change_type = #{changeType}</if>
+            <if test="deptId != null "> and dept_id = #{deptId}</if>
+        </where>
+<!--        <if test="beginTime != null and beginTime != ''">&lt;!&ndash; 开始时间检索 &ndash;&gt;-->
+<!--            AND date_format(change_time,'%y%m%d') &gt;= date_format(#{beginTime},'%Y-%m-%d %H:%i:%s')-->
+<!--        </if>-->
+<!--        <if test="endTime != null and endTime != ''">&lt;!&ndash; 结束时间检索 &ndash;&gt;-->
+<!--            AND date_format(change_time,'%y%m%d') &lt;= date_format(#{endTime},'%Y-%m-%d %H:%i:%s')-->
+<!--        </if>-->
+    </select>
+
+    <select id="selectAppChangeReportById" parameterType="Long" resultMap="AppChangeReportResult">
+        <include refid="selectAppChangeReportVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertAppChangeReport" parameterType="com.ruoyi.system.entity.AppChangeReport" useGeneratedKeys="true" keyProperty="userId">
+        insert into app_change_report(
+            <if test="id != null and id != 0">id,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="updateBy != null and updateBy != ''">update_by,</if>
+            <if test="remark != null and remark !=''">remark,</if>
+            <if test="changeName != null and changeName != ''">change_name,</if>
+            <if test="changePhone != null and changePhone != ''">change_phone,</if>
+            <if test="reportCompany != null and reportCompany != ''">report_company,</if>
+            <if test="reportTemperature != null and reportTemperature != ''">report_temperature,</if>
+            <if test="changeTime != null and changeTime != ''">change_time,</if>
+            <if test="personId != null and personId != 0">person_id,</if>
+            <if test="deptName != null and deptName !=''">dept_name,</if>
+            <if test="jobNumber != null and jobNumber != ''">job_number,</if>
+            <if test="idNum != null and idNum != ''">id_num,</if>
+            <if test="changeType != null and changeType != 0">change_type,</if>
+            <if test="deptId != null and deptId != 0">dept_id,</if>
+        create_time
+        )values(
+        <if test="id != null and id != 0">#{id},</if>
+        <if test="createBy != null and createBy != ''">#{createBy},</if>
+        <if test="updateBy != null and updateBy != ''">#{updateBy},</if>
+        <if test="remark != null and remark !=''">#{remark},</if>
+        <if test="changeName != null and changeName != ''">#{changeName},</if>
+        <if test="changePhone != null and changePhone != ''">#{changePhone},</if>
+        <if test="reportCompany != null and reportCompany != ''">#{reportCompany},</if>
+        <if test="reportTemperature != null and reportTemperature != ''">#{reportTemperature},</if>
+        <if test="changeTime != null and changeTime != ''">#{changeTime},</if>
+        <if test="personId != null and personId != 0">#{personId},</if>
+        <if test="deptName != null and deptName !=''">#{deptName},</if>
+        <if test="jobNumber != null and jobNumber != ''">#{jobNumber},</if>
+        <if test="idNum != null and idNum != ''">#{idNum},</if>
+        <if test="changeType != null and changeType != 0">#{changeType},</if>
+        <if test="deptId != null and deptId != 0">#{deptId},</if>
+        sysdate()
+     )
+    </insert>
+
+    <update id="updateAppChangeReport" parameterType="com.ruoyi.system.entity.AppChangeReport">
+        update app_change_report
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="reportName != null">report_name = #{reportName},</if>
+            <if test="reportPhone != null">report_phone = #{reportPhone},</if>
+            <if test="reportCompany != null">report_company = #{reportCompany},</if>
+            <if test="reportTemperature != null">report_temperature = #{reportTemperature},</if>
+            <if test="reportTime != null">report_time = #{reportTime},</if>
+            <if test="personId != null">person_id = #{personId},</if>
+            <if test="deptName != null">dept_name = #{deptName},</if>
+            <if test="jobNumber != null">job_number = #{jobNumber},</if>
+            <if test="idNum != null">id_num = #{idNum},</if>
+            <if test="changeType != null">change_type = #{changeType},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAppChangeReportById" parameterType="Long">
+        delete from app_change_report where id = #{id}
+    </delete>
+
+    <delete id="deleteAppChangeReportByIds" parameterType="String">
+        delete from app_change_report where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectListWrapper" resultType="com.ruoyi.system.vo.AppChangeReportVO">
+        select * from app_change_report ${ew.customSqlSegment}
+    </select>
+
+    <select id="selectChangeList" resultType="com.ruoyi.system.entity.AppChangeReport" resultMap="AppChangeReportResult">
+        select id, create_time, create_by,dept_id, update_time, update_by, remark, change_name, change_phone, report_company, report_temperature, change_time, person_id, dept_name, job_number, id_num, change_type from app_change_report
+        where 1=1
+        <if test="deptId != null and deptId != 0">
+            AND  dept_id = #{deptId}
+        </if>
+        <if test="changeType != null and changeType != 0">
+            AND  change_type = #{changeType}
+        </if>
+        <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+            AND date_format(change_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+        </if>
+        <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+            AND date_format(change_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+        </if>
+    </select>
+
+    <select id="selectTodayMinusList" resultType="com.ruoyi.system.entity.AppChangeReport" resultMap="AppChangeReportResult">
+        select id, create_time, create_by,dept_id, update_time, update_by, remark, change_name, change_phone, report_company, report_temperature, change_time, person_id, dept_name, job_number, id_num, change_type
+        from app_change_report
+        where to_days(change_time) = to_days(now()) and change_type=2 and change_name=#{changeName}
+    </select>
+
+    <select id="selectTodayAddList" resultType="com.ruoyi.system.entity.AppChangeReport" resultMap="AppChangeReportResult">
+        select id, create_time, create_by,dept_id, update_time, update_by, remark, change_name, change_phone, report_company, report_temperature, change_time, person_id, dept_name, job_number, id_num, change_type
+        from app_change_report
+        where to_days(change_time) = to_days(now()) and change_type=1 and change_name=#{changeName}
+    </select>
+</mapper>

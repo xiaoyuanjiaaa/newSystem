@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.DeptChangeExamineMapper">
+    <select id="deptList" resultType="com.ruoyi.system.vo.DeptListVO">
+      select dept_id,dept_name from sys_dept
+    </select>
+
+    <select id="deptExamineList" resultType="com.ruoyi.system.vo.DeptExamineListVO">
+        SELECT
+            su.nick_name,
+            su.phonenumber,
+            dce.dept_name,
+            dce.dept_change,
+            dce.examine_time,
+            dce.create_time,
+            dce.user_id,
+            dce.dept_change_id
+        FROM
+            dept_change_examine dce
+                LEFT JOIN sys_user su ON dce.user_id = su.user_id
+        where
+        dce.flag=1
+        <if test="queryBO.nickName!=null">
+            and su.nick_name like CONCAT('%',#{queryBO.nickName},'%')
+        </if>
+        <if test="queryBO.phonenumber!=null">
+            and su.phonenumber like CONCAT('%',#{queryBO.phonenumber},'%')
+        </if>
+        <if test="queryBO.deptId!=null">
+            and dce.dept_change_id =#{queryBO.deptId}
+        </if>
+       order by dce.create_time desc
+    </select>
+</mapper>

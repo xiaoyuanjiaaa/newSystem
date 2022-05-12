@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AppRouteReportMapper">
+    <update id="updateInfo">
+        update app_route_report set status=#{updateDTO.status}, update_by=#{updateDTO.updateBy}
+        where 1=1 and route_id in
+        <foreach collection="updateDTO.routeIds" item="item" index="index" open="(" separator="," close=")">
+            CONVERT(#{item}, SIGNED )
+        </foreach>
+    </update>
+    <select id="getPageInfo" parameterType="com.ruoyi.system.dto.AppRouteReportQueryDTO"
+            resultType="com.ruoyi.system.vo.AppRouteReportVO">
+        select a.route_id, a.route_time, d.destination_name as routeAddr, a.status, a.remark, a.create_by,
+        c.dept_name, b.job_number, b.phonenumber as mobile
+        from app_route_report a
+        left join sys_user b on a.person_id = b.person_id
+        left join sys_dept c on b.dept_id = c.dept_id
+        left join app_destination d on CONVERT(a.route_addr, SIGNED ) = d.destination_id
+        where 1=1
+        <if test="queryDTO.personId != null">
+            and a.person_id = #{queryDTO.personId}
+        </if>
+        <if test="queryDTO.status != null">
+            and a.status = #{queryDTO.status}
+        </if>
+        <if test="queryDTO.deptId != null">
+            and b.dept_id = #{queryDTO.deptId}
+        </if>
+        <if test="queryDTO.routeAddr != null">
+            and d.destination_id = #{queryDTO.routeAddr}
+        </if>
+        <if test="queryDTO.userName != null">
+            and a.create_by like concat('%',#{queryDTO.userName},'%')
+        </if>
+        <if test="queryDTO.jobNumber != null">
+            and b.job_number like concat('%',#{queryDTO.jobNumber},'%')
+        </if>
+        <if test="queryDTO.startTime != null">
+            and a.route_time &gt;= str_to_date(#{queryDTO.startTime},'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="queryDTO.endTime != null">
+            and a.route_time &lt;= str_to_date(#{queryDTO.endTime},'%Y-%m-%d %H:%i:%s')
+        </if>
+        order by a.route_time desc
+    </select>
+</mapper>
