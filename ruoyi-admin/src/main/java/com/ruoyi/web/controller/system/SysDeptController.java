@@ -1,5 +1,7 @@
 package com.ruoyi.web.controller.system;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ruoyi.common.annotation.Log;
@@ -11,15 +13,17 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.domain.model.ResultVO;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.enums.DeptExamineStatus;
 import com.ruoyi.common.enums.FailEnums;
+import com.ruoyi.common.enums.RoleEnum;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.entity.AppHealthReport;
-import com.ruoyi.system.service.IAppHealthReportService;
-import com.ruoyi.system.service.ISysDeptService;
+import com.ruoyi.system.entity.DeptChangeExamine;
+import com.ruoyi.system.service.*;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +49,10 @@ public class SysDeptController extends BaseController
     private ISysDeptService deptService;
     @Autowired
     private IAppHealthReportService appHealthReportService;
+    @Autowired
+    private ISysUserService sysUserService;
+    @Autowired
+    private IDeptChangeExamineService deptChangeExamineService;
 
     /**
      * 获取部门列表
@@ -155,6 +163,13 @@ public class SysDeptController extends BaseController
     @PutMapping
     public AjaxResult edit(@Validated @RequestBody SysDept dept)
     {
+        SysUser user=sysUserService.selectUserByUserPhone(dept.getPhone());
+        if(ObjectUtil.isNotNull(user)){
+            DeptChangeExamine deptChangeExamine=deptChangeExamineService.getOne(new LambdaQueryWrapper<DeptChangeExamine>().eq(DeptChangeExamine::getUserId, user.getUserId()));
+            if(ObjectUtil.isNotNull(deptChangeExamine)&&deptChangeExamine.getFlag()== DeptExamineStatus.EXAMINE.getCode()){
+                return AjaxResult.error(dept.getLeader() + "正处于审核中，无法修改");
+            }
+        }
         if (UserConstants.NOT_UNIQUE.equals(deptService.checkDeptNameUnique(dept)))
         {
             return AjaxResult.error("修改部门'" + dept.getDeptName() + "'失败，部门名称已存在");
@@ -173,7 +188,8 @@ public class SysDeptController extends BaseController
         String oldDeptName = sysDept.getDeptName();
         String deptName = dept.getDeptName();
         appHealthReportService.update(new UpdateWrapper<AppHealthReport>().eq("dept_name",oldDeptName).gt("report_time",DateUtils.getDate()).set("dept_name",deptName));
-
+        //修改部门负责人之后  对应的角色权限需要修改
+        deptService.updateDeptAdmin(dept);
         dept.setUpdateBy(getUsername());
         return toAjax(deptService.updateDept(dept));
     }

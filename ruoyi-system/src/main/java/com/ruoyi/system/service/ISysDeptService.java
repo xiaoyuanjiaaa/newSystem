@@ -124,4 +124,6 @@ public interface ISysDeptService extends IService<SysDept>
 
     //通过leader_id(person_id) 获取 sys_dept
     SysDept selectDeptByLeaderId(Long leaderId);
+    //修改部门负责人后对应的角色权限也要修改
+    Boolean updateDeptAdmin(SysDept dept);
 }

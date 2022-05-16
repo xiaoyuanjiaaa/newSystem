@@ -76,8 +76,8 @@ public class DeptChangeExamineController {
         return DeptChangeExamineService.deptExamine(DeptExamineDTO);
     }
 
-    @ApiOperation("个人门铃码图片上传并保存")
-    @PutMapping(value="/picUpload",consumes = "multipart/*",headers ="content-type=multipart/form-data")
+    @ApiOperation("个人门铃码图片上传")
+    @PutMapping(value="/picUpload")
     @ApiImplicitParam(name = "file", paramType="form", value = "临时文件", dataType="file", required = true)
     public AjaxResult uploadFile(@RequestPart("file") MultipartFile file) throws Exception
     {
@@ -90,7 +90,6 @@ public class DeptChangeExamineController {
             String fileName = FileUploadUtils.upload(filePath, file);
             log.info("结束------------------");
             String url = serverConfig.getUrl() + fileName;
-            DeptChangeExamineService.savePic(url);
             AjaxResult ajax = AjaxResult.success();
             ajax.put("fileName", fileName);
             ajax.put("url", url);
@@ -101,6 +100,12 @@ public class DeptChangeExamineController {
         {
             return AjaxResult.error(e.getMessage());
         }
+    }
+
+    @ApiOperation("图片保存")
+    @GetMapping("/savePic")
+    public AjaxResult savePic(@RequestParam("qrcodeUrl") String qrcodeUrl) {
+        return DeptChangeExamineService.savePic(qrcodeUrl);
     }
 }
 

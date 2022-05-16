@@ -52,7 +52,7 @@
         <if test="queryDTO.phonenumber!=null">
             and a.visit_phonenumber = #{queryDTO.phonenumber}
         </if>
-        <if test="queryDTO.flag==true or queryDTO.flag==null">
+        <if test="queryDTO.flag==true">
             and a.xcx_open_id is null
         </if>
         <if test="queryDTO.flag==false">

@@ -9,8 +9,7 @@
         SELECT
             su.nick_name,
             su.phonenumber,
-            dce.dept_name,
-            dce.dept_change,
+            sd.dept_name,
             dce.examine_time,
             dce.create_time,
             dce.user_id,
@@ -18,6 +17,7 @@
         FROM
             dept_change_examine dce
                 LEFT JOIN sys_user su ON dce.user_id = su.user_id
+                left join sys_dept sd on sd.dept_id=su.dept_id
         where
         dce.flag=1
         <if test="queryBO.nickName!=null">

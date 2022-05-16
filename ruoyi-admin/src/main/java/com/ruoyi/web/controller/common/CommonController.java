@@ -76,7 +76,7 @@ public class CommonController
     /**
      * 通用上传请求
      */
-    @PostMapping (value="/common/upload",consumes = "multipart/*",headers ="content-type=multipart/form-data")
+    @PostMapping (value="/common/upload")
     @ApiImplicitParam(name = "file", paramType="form", value = "临时文件", dataType="file", required = true)
     public AjaxResult uploadFile(@RequestPart("file") MultipartFile file) throws Exception
     {

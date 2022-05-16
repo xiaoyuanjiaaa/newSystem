@@ -1,16 +1,25 @@
 package com.ruoyi.system.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.enums.RoleEnum;
 import com.ruoyi.system.dto.AppHealthReportCountDTO;
+import com.ruoyi.system.entity.SysUserRole;
 import com.ruoyi.system.entity.vo.GroupCompleteNumber;
 import com.ruoyi.system.entity.vo.HReport;
+import com.ruoyi.system.mapper.SysUserRoleMapper;
 import com.ruoyi.system.service.IAppHealthReportService;
+import com.ruoyi.system.service.ISysRoleService;
+import com.ruoyi.system.service.ISysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.annotation.DataScope;
@@ -38,6 +47,15 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper,SysDept> imple
 
     @Autowired
     private SysRoleMapper roleMapper;
+
+    @Autowired
+    private ISysRoleService sysRoleService;
+
+    @Autowired
+    private SysUserRoleMapper userRoleMapper;
+
+    @Autowired
+    private ISysUserService sysUserService;
 
 
     /**
@@ -343,5 +361,25 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper,SysDept> imple
     private boolean hasChild(List<SysDept> list, SysDept t)
     {
         return getChildList(list, t).size() > 0 ? true : false;
+    }
+
+    @Override
+    public Boolean updateDeptAdmin(SysDept dept) {
+        //先删除旧部门负责人的角色权限
+        SysDept oldSysDept=this.selectDeptById(dept.getDeptId());
+        SysUser sysUser=sysUserService.getBaseMapper().selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getNickName,oldSysDept.getLeader()));
+        SysUserRole oldSysUserRole=new SysUserRole();
+        oldSysUserRole.setUserId(sysUser.getUserId());
+        oldSysUserRole.setRoleId(RoleEnum.DEPT_ADMIN.getRoleId().longValue());
+        userRoleMapper.deleteUserRoleInfo(oldSysUserRole);
+        //再新增新部门负责人的权限
+        SysUser newSysUser = sysUserService.selectUserByUserPhone(dept.getPhone());
+        List<SysUserRole> sysUserRoleList=new ArrayList<>();
+        SysUserRole sysUserRole=new SysUserRole();
+        sysUserRole.setRoleId(RoleEnum.DEPT_ADMIN.getRoleId().longValue());
+        sysUserRole.setUserId(newSysUser.getUserId());
+        sysUserRoleList.add(sysUserRole);
+        userRoleMapper.batchUserRole(sysUserRoleList);
+        return Boolean.TRUE;
     }
 }

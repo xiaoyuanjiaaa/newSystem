@@ -138,4 +138,11 @@ public class SysConfigController extends BaseController
         configService.resetConfigCache();
         return AjaxResult.success();
     }
+    @ApiOperation("系统名称配置")
+    @GetMapping("/nameConfig")
+    public AjaxResult sysNameConfig()
+    {
+
+        return AjaxResult.success(configService.sysConfigName());
+    }
 }

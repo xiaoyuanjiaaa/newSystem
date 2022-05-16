@@ -109,4 +109,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </delete>
 
+    <select id="sysConfigName" resultType="com.ruoyi.system.entity.NameConfig">
+      select * from sys_name_config
+    </select>
 </mapper>

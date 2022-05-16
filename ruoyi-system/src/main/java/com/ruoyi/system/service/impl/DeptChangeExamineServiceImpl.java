@@ -28,12 +28,10 @@ import com.ruoyi.system.bo.DeptExamineListBO;
 import com.ruoyi.system.dto.DeptExamineDTO;
 import com.ruoyi.system.dto.DeptExamineListDTO;
 import com.ruoyi.system.entity.DeptChangeExamine;
+import com.ruoyi.system.entity.DoorPic;
 import com.ruoyi.system.mapper.DeptChangeExamineMapper;
-import com.ruoyi.system.service.IAppHealthReportService;
-import com.ruoyi.system.service.IDeptChangeExamineService;
+import com.ruoyi.system.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ruoyi.system.service.ISysDeptService;
-import com.ruoyi.system.service.ISysUserService;
 import com.ruoyi.system.vo.DeptExamineListVO;
 import com.ruoyi.system.vo.DeptListVO;
 import com.ruoyi.system.vo.DeptStatusVO;
@@ -68,6 +66,8 @@ public class DeptChangeExamineServiceImpl extends ServiceImpl<DeptChangeExamineM
 
     @Autowired
     private IAppHealthReportService appHealthReportService;
+    @Autowired
+    private IDoorPicService doorPicService;
     @Override
     public ResultVO<List<DeptListVO>> deptList() {
         List<DeptListVO> result=this.baseMapper.deptList();
@@ -76,14 +76,8 @@ public class DeptChangeExamineServiceImpl extends ServiceImpl<DeptChangeExamineM
 
     @Override
     public ResultVO<Boolean> udpateDept(Integer deptChangeId) {
-        //负责人不能申请换区
-        if(checkLeader()){
-            throw new CustomException(FailEnums.LEADER_NOT_OPTION);
-        }
         Long userId = SecurityUtils.getUserId();
         Long deptId=SecurityUtils.getLoginUser().getUser().getDeptId();
-        //获取当前部门 通过部门id获取部门名称
-        SysDept sysDeptCurrent=sysDeptService.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptId,deptId));
         //获取变更后的部门 通过部门id获取部门名称
         SysDept sysDeptchange=sysDeptService.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptId,deptChangeId));
         if (ObjectUtil.isNull(sysDeptchange)) {
@@ -93,8 +87,8 @@ public class DeptChangeExamineServiceImpl extends ServiceImpl<DeptChangeExamineM
         DeptChangeExamine getOne=this.baseMapper.selectOne(new LambdaQueryWrapper<DeptChangeExamine>().eq(DeptChangeExamine::getUserId, userId));
         if(ObjectUtil.isNull(getOne)){
             //如果审核记录为空  就添加一条新的审核记录
-            DeptChangeExamine DeptChangeExamine = new DeptChangeExamine().setId(IdWorker.getId()).setDeptChangeId(deptChangeId).setDeptChange(sysDeptchange.getDeptName())
-                    .setUserId(userId).setDeptName(sysDeptCurrent.getDeptName()).setCreateTime(LocalDateTime.now()).setFlag(DeptExamineStatus.EXAMINE.getCode());
+            DeptChangeExamine DeptChangeExamine = new DeptChangeExamine().setId(IdWorker.getId()).setDeptChangeId(deptChangeId)
+                    .setUserId(userId).setCreateTime(LocalDateTime.now()).setFlag(DeptExamineStatus.EXAMINE.getCode());
             return new ResultVO<>(SuccessEnums.UPDATE_SUCCESS,this.save(DeptChangeExamine));
         }
         //如果片区处于审核中 就不能进行申请变更
@@ -104,7 +98,8 @@ public class DeptChangeExamineServiceImpl extends ServiceImpl<DeptChangeExamineM
             }
         }
         //更改审核状态
-        Boolean result=this.update(new LambdaUpdateWrapper<DeptChangeExamine>().eq(DeptChangeExamine::getUserId, userId).set(DeptChangeExamine::getDeptChange, sysDeptchange.getDeptName())
+        Boolean result=this.update(new LambdaUpdateWrapper<DeptChangeExamine>().eq(DeptChangeExamine::getUserId, userId).
+                set(DeptChangeExamine::getDeptChangeId,deptChangeId)
                 .set(DeptChangeExamine::getCreateTime,LocalDateTime.now()).set(DeptChangeExamine::getFlag,DeptExamineStatus.EXAMINE.getCode()));
         return new ResultVO<>(SuccessEnums.UPDATE_SUCCESS,result);
     }
@@ -120,9 +115,12 @@ public class DeptChangeExamineServiceImpl extends ServiceImpl<DeptChangeExamineM
         List<SysRole> newRoles=roles.stream().filter(sysRole -> sysRole.getRoleId()==115).collect(Collectors.toList());
         if(newRoles.size()>0 || SecurityUtils.getLoginUser().getUser().isAdmin()){
             Page<DeptExamineListVO> result=this.baseMapper.deptExamineList(deptExamineListBO, new Page<>(dto.getPageNum(), dto.getPageSize()));
+            Map<Long,String> deptMap=sysDeptService.selectDeptList(new SysDept()).stream().collect(Collectors.toMap(SysDept::getDeptId,SysDept::getDeptName));
+            for(DeptExamineListVO  deptExamineListVO:result.getRecords()){
+                deptExamineListVO.setDeptChange(deptMap.get(deptExamineListVO.getDeptChangeId().longValue()));
+            }
             return new TableDataInfo(result.getRecords(),(int)result.getTotal());
         }
-
         //只能看到当前负责人的片区审核列表：
         //1通过当前用户名称对比片区负责人名称 如果为空则返回为空
         if(!deptAdmin){
@@ -131,6 +129,10 @@ public class DeptChangeExamineServiceImpl extends ServiceImpl<DeptChangeExamineM
         //2过滤除负责的片区审核列表
         deptExamineListBO.setDeptId(SecurityUtils.getDeptId().intValue());
         Page<DeptExamineListVO> result=this.baseMapper.deptExamineList(deptExamineListBO, new Page<>(dto.getPageNum(), dto.getPageSize()));
+        Map<Long,String> deptMap=sysDeptService.selectDeptList(new SysDept()).stream().collect(Collectors.toMap(SysDept::getDeptId,SysDept::getDeptName));
+        for(DeptExamineListVO  deptExamineListVO:result.getRecords()){
+            deptExamineListVO.setDeptChange(deptMap.get(deptExamineListVO.getDeptChangeId().longValue()));
+        }
         return new TableDataInfo(result.getRecords(),(int)result.getTotal());
     }
 
@@ -145,7 +147,7 @@ public class DeptChangeExamineServiceImpl extends ServiceImpl<DeptChangeExamineM
         }
         if(dto.getType()==1){
             sysUserService.update(new LambdaUpdateWrapper<SysUser>().eq(SysUser::getUserId, dto.getUserId()).set(SysUser::getDeptId, deptChangeExamine.getDeptChangeId()));
-            this.update(new LambdaUpdateWrapper<DeptChangeExamine>().eq(DeptChangeExamine::getUserId,dto.getUserId()).set(DeptChangeExamine::getDeptName,deptChangeExamine.getDeptChange())
+            this.update(new LambdaUpdateWrapper<DeptChangeExamine>().eq(DeptChangeExamine::getUserId,dto.getUserId())
                     .set(DeptChangeExamine::getFlag,DeptExamineStatus.EXAMINE_PASS.getCode()).set(DeptChangeExamine::getExamineTime,LocalDateTime.now()));
             return AjaxResult.success();
         }else if(dto.getType()==2){
@@ -163,48 +165,39 @@ public class DeptChangeExamineServiceImpl extends ServiceImpl<DeptChangeExamineM
         //获取当前用户审核记录
         DeptChangeExamine deptChangeExamine=this.getOne(new LambdaQueryWrapper<DeptChangeExamine>().eq(DeptChangeExamine::getUserId,userId));
         DeptStatusVO deptStatusVO=new DeptStatusVO();
+        DoorPic doorPic=doorPicService.getOne(new LambdaQueryWrapper<DoorPic>().eq(DoorPic::getUserId, userId));
+        if(ObjectUtil.isNotNull(doorPic)){
+            deptStatusVO.setQrcodeUrl(doorPic.getQrcodeUrl());
+        }
         boolean deptAdmin = appHealthReportService.isDeptAdmin(SecurityUtils.getLoginUser().getUser());
         if(deptAdmin){
             deptStatusVO.setLeaderStatus(CheckLeaderStatus.LEADER_REFUSE.getCode());
+        }else {
+            deptStatusVO.setLeaderStatus(CheckLeaderStatus.LEADER_ALLOW.getCode());
         }
-        deptStatusVO.setLeaderStatus(CheckLeaderStatus.LEADER_ALLOW.getCode());
-        //如果审核记录为空 返回当前用户的片区id和片区名称  没有审核状态
-        if(ObjectUtil.isNull(deptChangeExamine)){
-            deptStatusVO.setDeptId(sysUser.getDeptId().intValue());
-            SysDept currentDept = sysDeptService.selectDeptById(sysUser.getDeptId());
-            if(ObjectUtil.isNotNull(currentDept)) {
-                deptStatusVO.setDeptName(currentDept.getDeptName());
-            }
-            return new ResultVO<>(SuccessEnums.QUERY_SUCCESS, deptStatusVO);
-        }
+        SysDept currentDept = sysDeptService.selectDeptById(sysUser.getDeptId());
         //封装片区审核状态以及二维码图片
-        deptStatusVO.setStatus(deptChangeExamine.getFlag());
-        deptStatusVO.setQrcodeUrl(deptChangeExamine.getQrcodeUrl());
-        //如果审核通过 返回通过后片区id以及片区名称
-        if(deptChangeExamine.getFlag()!=null&&DeptExamineStatus.EXAMINE_PASS.getCode()==deptChangeExamine.getFlag()){
-            deptStatusVO.setDeptId(deptChangeExamine.getDeptChangeId());
-            deptStatusVO.setDeptName(deptChangeExamine.getDeptChange());
-            return new ResultVO<>(SuccessEnums.QUERY_SUCCESS, deptStatusVO);
+        if(ObjectUtil.isNotNull(deptChangeExamine)) {
+            deptStatusVO.setStatus(deptChangeExamine.getFlag());
         }
-        deptStatusVO.setDeptId(sysUser.getDeptId().intValue());
-        deptStatusVO.setDeptName(sysUser.getDept().getDeptName());
+        deptStatusVO.setDeptId(currentDept.getDeptId().intValue());
+        deptStatusVO.setDeptName(currentDept.getDeptName());
         return new ResultVO<>(SuccessEnums.QUERY_SUCCESS, deptStatusVO);
     }
 
     @Override
     public AjaxResult savePic(String url) {
-        DeptChangeExamine deptChangeExamine=this.getOne(new LambdaQueryWrapper<DeptChangeExamine>().eq(DeptChangeExamine::getUserId, SecurityUtils.getUserId()));
-        if(ObjectUtil.isNull(deptChangeExamine)){
-            DeptChangeExamine newDeptChangeExamine = new DeptChangeExamine().setQrcodeUrl(url).setId(IdWorker.getId()).setUserId(SecurityUtils.getUserId());
-            this.save(newDeptChangeExamine);
+        List<DoorPic> list=doorPicService.getBaseMapper().selectList(new LambdaQueryWrapper<DoorPic>().eq(DoorPic::getUserId, SecurityUtils.getUserId()));
+        if(list.size()>0){
+            doorPicService.update(new LambdaUpdateWrapper<DoorPic>().eq(DoorPic::getUserId, SecurityUtils.getUserId()).set(DoorPic::getQrcodeUrl, url)
+                    .set(DoorPic::getUpdateTime, LocalDateTime.now()));
             return AjaxResult.success();
         }
-        this.update(new LambdaUpdateWrapper<DeptChangeExamine>().eq(DeptChangeExamine::getUserId, SecurityUtils.getUserId()).set(DeptChangeExamine::getQrcodeUrl, url));
+        DoorPic doorPic=new DoorPic();
+        doorPic.setUserId(SecurityUtils.getUserId());
+        doorPic.setQrcodeUrl(url);
+        doorPic.setCreateTime(LocalDateTime.now());
+        doorPicService.save(doorPic);
         return AjaxResult.success();
-    }
-    public Boolean checkLeader() {
-        String leaderName=SecurityUtils.getLoginUser().getUser().getDept().getLeader();
-        String nickName=SecurityUtils.getLoginUser().getUser().getNickName();
-        return leaderName.equals(nickName);
     }
 }

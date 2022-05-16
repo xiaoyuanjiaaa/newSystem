@@ -1,6 +1,8 @@
 package com.ruoyi.system.service;
 
 import java.util.List;
+import java.util.Map;
+
 import com.ruoyi.system.entity.SysConfig;
 
 /**
@@ -87,4 +89,6 @@ public interface ISysConfigService
      * @return 结果
      */
     public String checkConfigKeyUnique(SysConfig config);
+    //获取系统名称
+    Map<String,String> sysConfigName();
 }

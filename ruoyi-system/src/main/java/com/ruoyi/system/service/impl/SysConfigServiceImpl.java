@@ -2,7 +2,12 @@ package com.ruoyi.system.service.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
+
+import com.ruoyi.system.entity.NameConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.annotation.DataSource;
@@ -212,5 +217,15 @@ public class SysConfigServiceImpl implements ISysConfigService
     private String getCacheKey(String configKey)
     {
         return Constants.SYS_CONFIG_KEY + configKey;
+    }
+
+    @Override
+    public Map<String,String> sysConfigName() {
+        List<NameConfig> list=configMapper.sysConfigName();
+        if(list.size()>0){
+            Map<String,String> map=list.stream().collect(Collectors.toMap(NameConfig::getName,NameConfig::getValue));
+            return map;
+        }
+        return null;
     }
 }

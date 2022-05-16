@@ -1,9 +1,12 @@
 package com.ruoyi.system.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ruoyi.system.entity.NameConfig;
 import com.ruoyi.system.entity.SysConfig;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -69,4 +72,5 @@ public interface SysConfigMapper extends BaseMapper<SysConfig>
      * @return 结果
      */
     public int deleteConfigByIds(Long[] configIds);
+    List<NameConfig> sysConfigName();
 }

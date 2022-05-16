@@ -40,10 +40,6 @@ public class DeptChangeExamine implements Serializable {
      */
     private Long userId;
 
-    /**
-     * 变更片区
-     */
-    private String deptChange;
 
     /**
      * 申请时间
@@ -63,10 +59,6 @@ public class DeptChangeExamine implements Serializable {
      * 变更地区id
      */
     private Integer deptChangeId;
-    /**
-     * 当前片区名称
-     */
-    private String deptName;
     /**
      * 个人门铃码图片地址
      */

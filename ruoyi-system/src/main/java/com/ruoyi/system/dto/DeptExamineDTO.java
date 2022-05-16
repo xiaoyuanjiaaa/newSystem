@@ -14,7 +14,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class DeptExamineDTO {
     @ApiModelProperty(value = "用户id")
-    private String userId;
+    private Long userId;
     @ApiModelProperty(value = "操作类型 1同意 2拒绝")
     private Integer type;
 }
