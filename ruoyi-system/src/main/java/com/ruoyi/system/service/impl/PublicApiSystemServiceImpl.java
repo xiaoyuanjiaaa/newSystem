@@ -114,7 +114,7 @@ public class PublicApiSystemServiceImpl implements PublicApiSystemService
     private String erWeiMa = "ErWeiMa";
 
     /**
-     * 五院接口相关
+     * 二院接口相关
      */
     @Value("${wy.skIdService}")
     private String skIdService;

@@ -74,7 +74,7 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
    @Value("${smsZh.sms.userPwd}")
    private String userPwd;
 
-   private String message="【无锡五院】您的验证码：";
+   private String message="【无锡二院】您的验证码：";
 
    @Override
    public ResultVO sendMessage(String phone) {
@@ -105,7 +105,7 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
       if(ObjectUtil.isEmpty(smsConfig)){
          return;
       }
-      String messages = "【无锡五院】"+prefix.concat(",").concat(smsConfig.getMessage());
+      String messages = "【无锡二院】"+prefix.concat(",").concat(smsConfig.getMessage());
       String requestBody = getMessageInfoObj(phone, messages);
       String result = sendSms(requestBody);
       if(!CheckUtil.NullOrEmpty(result)){

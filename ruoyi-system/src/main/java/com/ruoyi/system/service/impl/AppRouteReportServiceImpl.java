@@ -94,7 +94,7 @@ public class AppRouteReportServiceImpl extends ServiceImpl<AppRouteReportMapper,
              queryWrapper.or().or(qw->qw.eq("route_time",routeReport.getRouteTime()).eq("person_id",routeReport.getPersonId()));
           }
        }
-       //查询出所有人当前所在地点，没有的人都在五院
+       //查询出所有人当前所在地点，没有的人都在二院
        List<AppRouteReport> reports = list(queryWrapper);
        Map<String,List<AppRouteReport>> map = reports.stream().collect(Collectors.groupingBy(AppRouteReport::getRouteAddr));
        List<AppRouteReportsVO> appRouteReportVOS = new ArrayList<>();

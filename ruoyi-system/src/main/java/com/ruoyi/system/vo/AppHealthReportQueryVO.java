@@ -19,5 +19,7 @@ public class AppHealthReportQueryVO extends AppHealthReport {
 
 //    @ApiModelProperty("工号")
 //    private String jobNumber;
+@ApiModelProperty("是否在岗")
+private String isDuty;
 
 }

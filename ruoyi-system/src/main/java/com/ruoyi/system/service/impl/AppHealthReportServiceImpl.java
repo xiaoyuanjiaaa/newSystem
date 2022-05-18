@@ -1,6 +1,8 @@
 package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -9,11 +11,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
-import com.ruoyi.common.core.domain.entity.SysDept;
-import com.ruoyi.common.core.domain.entity.SysDictData;
-import com.ruoyi.common.core.domain.entity.SysRole;
-import com.ruoyi.common.core.domain.entity.SysUser;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.ruoyi.common.core.domain.entity.*;
 import com.ruoyi.common.core.domain.model.LoginUser;
+import com.ruoyi.common.enums.DutyStatusEnums;
 import com.ruoyi.common.exception.CustomException;
 import com.ruoyi.system.dto.*;
 import com.ruoyi.common.utils.CheckUtil;
@@ -37,6 +39,7 @@ import com.ruoyi.system.mapper.SysRoleMapper;
 import com.ruoyi.system.mapper.SysUserMapper;
 import com.ruoyi.system.service.*;
 import com.ruoyi.system.vo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +57,7 @@ import java.util.stream.Collectors;
  * @Date 2021-08-14 02:10
  */
 @Service
+@Slf4j
 @Transactional
 public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMapper, AppHealthReport> implements IAppHealthReportService {
 
@@ -142,12 +146,22 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                 queryWrapper.in("app_health_report.person_id", sysUsers.stream().map(SysUser::getPersonId).collect(Collectors.toList()));
             }
         }
+        if (reportDTO.getDutyStatus() != null) {
+            queryWrapper.eq("duty_status", reportDTO.getDutyStatus());
+        }
         PageHelper.startPage(reportDTO.getPageNum(), reportDTO.getPageSize(), reportDTO.getOrderBy());
         List<AppHealthReportQueryVO> appHealthReports = baseMapper.selectListByWrapper(queryWrapper);
         for (AppHealthReportQueryVO appHealthReport : appHealthReports) {
             if (appHealthReport.getWorkPlace() != null){
                 SysDictData sysDictData = dictDataService.getByValue(appHealthReport.getWorkPlace());
                 appHealthReport.setWorkPlace(sysDictData.getDictLabel());
+            }
+            if(appHealthReport.getDutyStatus()!=null) {
+                if (DutyStatusEnums.ON_DUTY.getCode() == appHealthReport.getDutyStatus()) {
+                    appHealthReport.setIsDuty(DutyStatusEnums.ON_DUTY.getMsg());
+                } else if (DutyStatusEnums.OUT_DUTY.getCode() == appHealthReport.getDutyStatus()) {
+                    appHealthReport.setIsDuty(DutyStatusEnums.OUT_DUTY.getMsg());
+                }
             }
         }
         return new PageInfo<>(appHealthReports);
@@ -301,8 +315,17 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
             }
             AppHealthReportVO po = getInfoByPersonId(saveDTO.getPersonId());
             AppHealthReport info = new AppHealthReport();
+            //解析模板  在院状态添加到新字段里
+            Gson gson=new Gson();
+            List<Option> list = gson.fromJson(dto.getReportJson(), new TypeToken<List<Option>>() {
+            }.getType());
+            for (Option option : list) {
+                if ("21".equals(option.getDetailId())) {
+                    info.setDutyStatus((Integer) option.getValue());
+                }
+            }
             BeanUtils.copyProperties(dto, info);
-            if (po != null && po.getReportId() != null && getTimeChange()) {
+                if (po != null && po.getReportId() != null && getTimeChange()) {
                 //在时间之内可以修改
                 info.setReportId(po.getReportId()).setUpdateTime(new Date()).setReportTime(new Date());
                 appHealthReportMapper.updateById(info);
@@ -447,7 +470,10 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
         // 统计已填报的数据
 //        List<AppHealthReport> healthReports = list(queryWrapper);
         int count = count(queryWrapper); // 已填报
-
+        //统计在岗人数
+        queryWrapper.eq("duty_status", DutyStatusEnums.ON_DUTY.getCode());
+        int onDutyCount = count(queryWrapper);
+        log.info("在岗人数onDudyCount==========================="+onDutyCount);
         //统计未填报的数据
         //统计当天所有未填报的数据
         QueryWrapper<AppNotReported> wrapper = new QueryWrapper<>();
@@ -487,6 +513,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                     .deptUnComplete(0)
                     .deptCount(list.size())
                     .deptComplete(list.size())
+                    .onDutyCount(onDutyCount)
                     .build();
             return countCompleteNumber;
         }
@@ -501,6 +528,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                 .deptUnComplete(deptIdTwo.size())
                 .deptCount(list.size())
                 .deptComplete(list1.size())
+                .onDutyCount(onDutyCount)
                 .build();
         return countCompleteNumber;
 

@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 
 import com.ruoyi.system.entity.NameConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.annotation.DataSource;
 import com.ruoyi.common.constant.Constants;
@@ -221,6 +222,7 @@ public class SysConfigServiceImpl implements ISysConfigService
 
     @Override
     public Map<String,String> sysConfigName() {
+
         List<NameConfig> list=configMapper.sysConfigName();
         if(list.size()>0){
             Map<String,String> map=list.stream().collect(Collectors.toMap(NameConfig::getName,NameConfig::getValue));
