@@ -8,6 +8,7 @@ import com.alibaba.excel.write.builder.ExcelWriterBuilder;
 import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
@@ -393,9 +394,11 @@ public class AppPersonWxController extends BaseController {
     @ApiOperation("通过身份证或者personId获取当天的预检分诊信息")
     @GetMapping("/getInfoById")
     public ResultVO<AppPersonWxVisit> getInfoById(AppPersonWxQueryDTO queryDTO) {
-        AppPersonWxVisit result = appPersonWxVisitService.getById(queryDTO.getId());
-        return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, result);
+        List<AppPersonWxVisit> appPersonWxVisits = appPersonWxVisitService.getBaseMapper ().selectList (new LambdaQueryWrapper<AppPersonWxVisit> ().eq (AppPersonWxVisit :: getAppPersonWxId,queryDTO.getId ()));
+        Optional<AppPersonWxVisit> max = appPersonWxVisits.stream ().max (Comparator.comparing (AppPersonWxVisit :: getCreateTime));
+        AppPersonWxVisit appPersonWxVisit = max.get ();
+        if ( appPersonWxVisit != null ){
+            return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, appPersonWxVisit);
+        }else{ throw new CustomException ("查询失败"); }
     }
-
-
 }
