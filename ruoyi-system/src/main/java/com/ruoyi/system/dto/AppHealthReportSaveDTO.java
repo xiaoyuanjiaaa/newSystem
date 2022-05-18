@@ -145,4 +145,20 @@ public class AppHealthReportSaveDTO {
 
     @ApiModelProperty("接种图片url")
     private String vaccinationUrl;
+    //增加行程码,门铃码,核酸采样截图url字段
+    /**
+     * 行程码图片url
+     */
+    @ApiModelProperty("行程码图片url")
+    private String xccodeUrl;
+    /**
+     * 门铃码图片url
+     */
+    @ApiModelProperty("门铃码图片url")
+    private String qrcodeUrl;
+    /**
+     * 核酸采样图片url
+     */
+    @ApiModelProperty("核酸采样图片url")
+    private String hscycodeUrl;
 }

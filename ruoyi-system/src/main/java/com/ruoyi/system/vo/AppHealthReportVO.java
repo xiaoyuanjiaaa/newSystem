@@ -130,4 +130,19 @@ public class AppHealthReportVO {
     @ApiModelProperty("接种图片url")
     private String vaccinationUrl;
 
+    /**
+     * 行程码图片url
+     */
+    @ApiModelProperty("行程码图片url")
+    private String xccodeUrl;
+    /**
+     * 门铃码图片url
+     */
+    @ApiModelProperty("门铃码图片url")
+    private String qrcodeUrl;
+    /**
+     * 核酸采样图片url
+     */
+    @ApiModelProperty("核酸采样图片url")
+    private String hscycodeUrl;
 }

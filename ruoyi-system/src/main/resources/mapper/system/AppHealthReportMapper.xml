@@ -74,7 +74,10 @@
                app_health_report.first_stitch_time,
                app_health_report.two_stitch_time,
                app_health_report.not_vac_remark,
-               app_health_report.vaccination_url
+               app_health_report.vaccination_url,
+               app_health_report.xccode_url,
+               app_health_report.qrcode_url,
+               app_health_report.hscycode_url
         from app_health_report
                  left join sys_user su on app_health_report.person_id = su.person_id
                  left join sys_dept sd on su.dept_id = sd.dept_id ${ew.customSqlSegment}

@@ -182,7 +182,7 @@ public class AppHealthReport  implements Serializable {
 	@TableField("app_source" )
 	@ApiModelProperty(value = "填报来源：1.小程序填报；2.代为填报；3.批量填报；4无需填报")
 	private Integer appSource ;
-	
+
 	//增加了一个注解
 	@TableField("work_place")
 	@ApiModelProperty("工作场所")
@@ -229,4 +229,19 @@ public class AppHealthReport  implements Serializable {
 
 	@ApiModelProperty("接种图片url")
 	private String vaccinationUrl;
+	/**
+	 * 行程码图片url
+	 */
+	@ApiModelProperty("行程码图片url")
+	private String xccodeUrl;
+	/**
+	 * 门铃码图片url
+	 */
+	@ApiModelProperty("门铃码图片url")
+	private String qrcodeUrl;
+	/**
+	 * 核酸采样图片url
+	 */
+	@ApiModelProperty("核酸采样图片url")
+	private String hscycodeUrl;
 }
