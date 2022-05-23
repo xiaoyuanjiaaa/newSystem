@@ -89,7 +89,7 @@ public class SmsTask {
         zhSmsDTO.setMobile(mobile);
         zhSmsDTO.setUid(uId);
         zhSmsDTO.setUserpwd(userPwd);
-        smsConfigService.noticeReportBySms(zhSmsDTO);
+        //smsConfigService.noticeReportBySms(zhSmsDTO);
     }
 
 

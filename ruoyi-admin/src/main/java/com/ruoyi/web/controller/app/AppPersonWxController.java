@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.app;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONObject;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
@@ -46,6 +47,7 @@ import com.ruoyi.system.service.SystemService;
 import com.ruoyi.system.vo.AppPersonQueryWxVO;
 import com.ruoyi.system.vo.AppPersonVO;
 import com.ruoyi.system.vo.AppPersonWxVO;
+import com.ruoyi.system.vo.AppPersonWxVisitVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -396,9 +398,18 @@ public class AppPersonWxController extends BaseController {
     public ResultVO<AppPersonWxVisit> getInfoById(AppPersonWxQueryDTO queryDTO) {
         List<AppPersonWxVisit> appPersonWxVisits = appPersonWxVisitService.getBaseMapper ().selectList (new LambdaQueryWrapper<AppPersonWxVisit> ().eq (AppPersonWxVisit :: getAppPersonWxId,queryDTO.getId ()));
         Optional<AppPersonWxVisit> max = appPersonWxVisits.stream ().max (Comparator.comparing (AppPersonWxVisit :: getCreateTime));
-        AppPersonWxVisit appPersonWxVisit = max.get ();
-        if ( appPersonWxVisit != null ){
-            return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, appPersonWxVisit);
-        }else{ throw new CustomException ("查询失败"); }
+        if(ObjectUtil.isEmpty(max)){
+            return new ResultVO<>(SuccessEnums.USER_QUERY_SUCCESS,null);
+        }
+        AppPersonWxVisit appPersonWxVisit = max.get();
+        AppPersonWxVisitVO appPersonWxVisitVO = new AppPersonWxVisitVO();
+        BeanUtils.copyProperties(appPersonWxVisit,appPersonWxVisitVO);
+        AppPerson appPerson=appPersonService.getOne(new LambdaQueryWrapper<AppPerson>().eq(AppPerson::getPersonId, appPersonWxVisit.getPersonId()));
+        if(ObjectUtil.isNotNull(appPerson)){
+            appPersonWxVisitVO.setPersonName(appPerson.getPersonName());
+            appPersonWxVisitVO.setMobile(appPerson.getMobile());
+            appPersonWxVisitVO.setIdNum(appPerson.getIdNum());
+        }
+            return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, appPersonWxVisitVO);
     }
 }
