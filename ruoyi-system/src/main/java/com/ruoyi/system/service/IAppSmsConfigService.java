@@ -1,9 +1,15 @@
 package com.ruoyi.system.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ruoyi.common.core.domain.model.ResultVO;
+import com.ruoyi.common.core.page.PageDomain;
+import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.system.dto.ZhSmsDTO;
 import com.ruoyi.system.entity.AppSmsConfig;
+import com.ruoyi.system.vo.SmsConfigListVO;
+
+import java.util.List;
 
 /**
  * @Description
@@ -22,4 +28,14 @@ public interface IAppSmsConfigService extends IService<AppSmsConfig> {
 
     //添加短信配置
     ResultVO addSmsConfig(AppSmsConfig appSmsConfig);
+
+    //短信提醒列表
+    TableDataInfo smsConfigList(PageDomain domain);
+    //获取手机号（发送给本人）
+    String getSelfPhone();
+    //获取手机号（发送给部门负责）
+    String getLeaderPhone();
+
+    //获取手机号（发送给指定人员）
+    String getAppointPhone(String appointUser);
 }

@@ -6,7 +6,7 @@ spring:
         druid:
             # 主库数据源
             master:
-                url: jdbc:mysql://127.0.0.1:3306/yqfk?useUnicode=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+                url: jdbc:mysql://192.168.11.139:3306/yqfk?useUnicode=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
                 username: root
                 password: Wxwy.xxk123
             # 从库数据源
@@ -60,7 +60,7 @@ spring:
     redis:
         # 地址
 #        host: 192.168.20.6
-        host: 127.0.0.1
+        host: 192.168.11.139
         # 端口，默认为6379
         port: 6379
         # 数据库索引
@@ -119,9 +119,9 @@ wx:
 smsZh:
     sms:
         url: http://sms.zh-ink.com/api/sms/send
-        uid: wuyuan
-        userPwd: 62c8ad0a15d9d1ca38d5dee762a16e01
-        message: 【无锡五院】您今日的健康信息还未上报，请及时填写
+        uid: wuxieryuan
+        userPwd: 8c80949df74df064be5a5773c5344825
+        message: 【无锡二院】您今日的健康信息还未上报，请及时填写
         ext: 111
 
 # ureport Mysql 存储

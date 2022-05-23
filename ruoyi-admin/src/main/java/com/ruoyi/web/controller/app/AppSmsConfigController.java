@@ -2,6 +2,8 @@ package com.ruoyi.web.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.model.ResultVO;
+import com.ruoyi.common.core.page.PageDomain;
+import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.SuccessEnums;
 import com.ruoyi.system.entity.AppSmsConfig;
 import com.ruoyi.system.service.IAppSmsConfigService;
@@ -28,10 +30,8 @@ public class AppSmsConfigController {
 
    @ApiOperation(value = "查询短信配置")
    @GetMapping("/listSmsConfig")
-   public ResultVO<List<AppSmsConfig>> listSmsConfig(){
-      QueryWrapper<AppSmsConfig> queryWrapper = new QueryWrapper<>();
-      queryWrapper.orderByAsc("sms_time");
-      return new ResultVO<List<AppSmsConfig>>(SuccessEnums.QUERY_SUCCESS,appSmsConfigService.list(queryWrapper));
+   public TableDataInfo listSmsConfig(PageDomain domain){
+      return appSmsConfigService.smsConfigList(domain);
    }
 
 

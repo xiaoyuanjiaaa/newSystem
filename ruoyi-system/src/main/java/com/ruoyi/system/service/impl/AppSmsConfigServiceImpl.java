@@ -4,29 +4,41 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.PageInfo;
+import com.ruoyi.common.core.domain.entity.SysDept;
+import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.ResultVO;
+import com.ruoyi.common.core.page.PageDomain;
+import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.FailEnums;
+import com.ruoyi.common.enums.RemindObjectEnums;
+import com.ruoyi.common.enums.RemindTypeEnums;
 import com.ruoyi.common.enums.SuccessEnums;
 import com.ruoyi.common.exception.CustomException;
 import com.ruoyi.common.utils.CheckUtil;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.statics.ConstantDic;
+import com.ruoyi.system.dto.AppHealthReportCountDTO;
 import com.ruoyi.system.dto.ZhSmsDTO;
 import com.ruoyi.system.entity.AppSmsConfig;
 import com.ruoyi.system.entity.AppSmsSendLog;
 import com.ruoyi.system.entity.SmsConfig;
 import com.ruoyi.system.mapper.AppSmsConfigMapper;
-import com.ruoyi.system.service.IAppSmsConfigService;
-import com.ruoyi.system.service.IAppSmsSendLogService;
-import com.ruoyi.system.service.ISmsConfigService;
+import com.ruoyi.system.service.*;
+import com.ruoyi.system.vo.SmsConfigListVO;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,10 +46,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 /**
@@ -65,6 +81,10 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
    @Autowired
    private IAppSmsConfigService appSmsConfigService;
 
+   @Autowired
+   private ISysDeptService sysDeptService;
+   @Autowired
+   private IAppHealthReportService healthReportService;
    @Value("${smsZh.sms.url}")
    private String sendMessageUrl;
 
@@ -183,5 +203,77 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
       }
       appSmsConfigService.save(appSmsConfig);
       return new ResultVO<>(SuccessEnums.SAVE_SUCCESS,null);
+   }
+
+   @Override
+   public TableDataInfo smsConfigList(PageDomain domain) {
+      QueryWrapper<AppSmsConfig> queryWrapper = new QueryWrapper<>();
+      queryWrapper.orderByAsc("sms_time");
+      Page<AppSmsConfig> page = this.page(new Page<>(domain.getPageNum(), domain.getPageSize()), queryWrapper);
+      List<SmsConfigListVO> list = new ArrayList<>();
+      if(page.getRecords().size()>0){
+         for(AppSmsConfig appSmsConfig:page.getRecords()){
+            SmsConfigListVO smsConfigListVO = new SmsConfigListVO();
+            BeanUtils.copyProperties(appSmsConfig,smsConfigListVO);
+            smsConfigListVO.setRemindObject(RemindObjectEnums.getMsg(appSmsConfig.getReminder()));
+            smsConfigListVO.setRemindType(RemindTypeEnums.getMsg(appSmsConfig.getType()));
+            list.add(smsConfigListVO);
+         }
+         return new TableDataInfo(list,(int)page.getTotal());
+      }
+      return null;
+   }
+
+   @Override
+   public String getSelfPhone() {
+      AppHealthReportCountDTO appHealthReportCountDTO = new AppHealthReportCountDTO();
+      appHealthReportCountDTO.setCurrentDay(LocalDate.now());
+      appHealthReportCountDTO.setPageSize(10000);
+      PageInfo<SysUser> userPageInfo =  healthReportService.pageSysUser(appHealthReportCountDTO);
+      if (CollectionUtils.isEmpty(userPageInfo.getList())){
+         return null;
+      }
+      StringBuffer mobile = new StringBuffer();
+      for (SysUser sysUser : userPageInfo.getList()) {
+         if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(sysUser.getPhonenumber())){
+            mobile.append(sysUser.getPhonenumber());
+            mobile.append(",");
+         }
+      }
+      mobile.deleteCharAt(mobile.length()-1);
+
+      log.error(mobile.toString());
+      return mobile.toString();
+   }
+
+   @Override
+   public String getLeaderPhone() {
+      List<SysDept> list=sysDeptService.list(new QueryWrapper<>());
+      if(ObjectUtil.isNull(list)){
+         return null;
+      }
+      List<String> phoneList=list.stream().map(SysDept::getPhone).collect(Collectors.toList());
+      StringBuffer mobile = new StringBuffer();
+      for (String phone : phoneList) {
+            mobile.append(phone);
+            mobile.append(",");
+      }
+      mobile.deleteCharAt(mobile.length()-1);
+      return mobile.toString();
+   }
+
+   @Override
+   public String getAppointPhone(String appointUser) {
+      if(ObjectUtil.isNull(appointUser)){
+         return null;
+      }
+      Map<String, String> map = JSONObject.parseObject(appointUser, new TypeReference<Map<String, String>>() {});
+      StringBuffer mobile = new StringBuffer();
+      for (Map.Entry<String, String> entry : map.entrySet()) {
+         mobile.append(entry.getValue());
+         mobile.append(",");
+      }
+      mobile.deleteCharAt(mobile.length()-1);
+      return mobile.toString();
    }
 }

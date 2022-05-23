@@ -161,4 +161,7 @@ public class AppHealthReportSaveDTO {
      */
     @ApiModelProperty("核酸采样图片url")
     private String hscycodeUrl;
+
+    @ApiModelProperty("异常项配置 1异常")
+    private Integer exceptionStatus;
 }

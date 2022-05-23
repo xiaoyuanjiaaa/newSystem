@@ -81,5 +81,13 @@ public class AppSmsConfig  implements Serializable {
    	@TableField("remark" )
 	private String remark;
 
+	@TableField("type" )
+	private Integer type;
+
+	@TableField("reminder" )
+	private Integer reminder;
+
+	@TableField("appoint_user" )
+	private String appointUser;
 
 }

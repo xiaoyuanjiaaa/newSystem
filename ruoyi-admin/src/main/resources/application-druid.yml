@@ -124,7 +124,7 @@ smsZh:
         uid: jianguo
 #        userPwd: 62c8ad0a15d9d1ca38d5dee762a16e01
         userPwd: 62c8ad0a15d9d1ca38d5dee762a16e02
-        message: 【无锡五院】您今日的健康信息还未上报，请及时填写.....
+        message: 【无锡二院】您今日的健康信息还未上报，请及时填写.....
         ext: 111222
 
 #smsZh:
@@ -132,7 +132,7 @@ smsZh:
 #        url: http://sms.zh-ink.com/api/sms/send
 #        uid: wuyuan
 #        userPwd: 62c8ad0a15d9d1ca38d5dee762a16e01
-#        message: 【无锡五院】您今日的健康信息还未上报，请及时填写
+#        message: 【无锡二院】您今日的健康信息还未上报，请及时填写
 #        ext: 111
 logoUrl : E:\image\logo.png
 

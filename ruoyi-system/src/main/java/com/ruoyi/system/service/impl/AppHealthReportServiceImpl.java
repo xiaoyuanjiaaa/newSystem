@@ -16,6 +16,7 @@ import com.google.gson.reflect.TypeToken;
 import com.ruoyi.common.core.domain.entity.*;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.enums.DutyStatusEnums;
+import com.ruoyi.common.enums.RemindTypeEnums;
 import com.ruoyi.common.exception.CustomException;
 import com.ruoyi.system.dto.*;
 import com.ruoyi.common.utils.CheckUtil;
@@ -26,10 +27,8 @@ import com.ruoyi.system.dto.AppHealthReportBatchSaveDTO;
 import com.ruoyi.system.dto.AppHealthReportCountDTO;
 import com.ruoyi.system.dto.AppHealthReportDTO;
 import com.ruoyi.system.dto.AppHealthReportSaveDTO;
-import com.ruoyi.system.entity.AppHealthReport;
-import com.ruoyi.system.entity.AppNotReported;
+import com.ruoyi.system.entity.*;
 import com.ruoyi.system.entity.AppPerson;
-import com.ruoyi.system.entity.WorkPlaceFrequency;
 import com.ruoyi.system.entity.vo.CountCompleteNumber;
 import com.ruoyi.system.entity.vo.GroupCompleteNumber;
 import com.ruoyi.system.entity.vo.HReport;
@@ -42,6 +41,7 @@ import com.ruoyi.system.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,7 +60,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMapper, AppHealthReport> implements IAppHealthReportService {
+    @Value("${smsZh.sms.uid}")
+    private String uId;
 
+    @Value("${smsZh.sms.userPwd}")
+    private String userPwd;
+
+    @Value("${smsZh.sms.ext}")
+    private String ext;
+
+    private String message="";
     @Resource
     private AppHealthReportMapper appHealthReportMapper;
 
@@ -99,6 +108,9 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
 
     @Autowired
     private WorkPlaceService workPlaceService;
+
+    @Autowired
+    private IAppSmsConfigService smsConfigService;
 
     String str = "[{\\\"detailId\\\":\\\"6\\\",\\\"templateId\\\":\\\"4\\\",\\\"columnName\\\":null,\\\"chineseName\\\":\\\"有无其他如：干咳、鼻塞、流涕、咽痛等呼吸道症状、腹泻等消化道症状、乏力、肌肉痛、结膜炎、嗅觉味觉减退等症状\\\",\\\"isCached\\\":null,\\\"columnType\\\":\\\"radio\\\",\\\"createBy\\\":\\\"\\\",\\\"createTime\\\":\\\"2021-09-08 08:54:01\\\",\\\"updateBy\\\":\\\"\\\",\\\"updateTime\\\":\\\"2021-09-08 13:27:38\\\",\\\"remark\\\":null,\\\"selectOptions\\\":\\\"[{\\\\\\\"label\\\\\\\":\\\\\\\"A.有\\\\\\\",\\\\\\\"value\\\\\\\":0},{\\\\\\\"label\\\\\\\":\\\\\\\"B.无\\\\\\\",\\\\\\\"value\\\\\\\":1}]\\\",\\\"sort\\\":\\\"0\\\",\\\"isEnabled\\\":\\\"0\\\",\\\"value\\\":0},{\\\"detailId\\\":\\\"7\\\",\\\"templateId\\\":\\\"4\\\",\\\"columnName\\\":null,\\\"chineseName\\\":\\\"近28天内，本人是否有流行病学史或密接史？\\\",\\\"isCached\\\":null,\\\"columnType\\\":\\\"radio\\\",\\\"createBy\\\":\\\"\\\",\\\"createTime\\\":\\\"2021-09-08 08:54:28\\\",\\\"updateBy\\\":\\\"\\\",\\\"updateTime\\\":\\\"2021-09-08 13:27:38\\\",\\\"remark\\\":null,\\\"selectOptions\\\":\\\"[{\\\\\\\"label\\\\\\\":\\\\\\\"A.有\\\\\\\",\\\\\\\"value\\\\\\\":0},{\\\\\\\"label\\\\\\\":\\\\\\\"B.无\\\\\\\",\\\\\\\"value\\\\\\\":1}]\\\",\\\"sort\\\":\\\"1\\\",\\\"isEnabled\\\":\\\"0\\\",\\\"value\\\":0},{\\\"detailId\\\":\\\"8\\\",\\\"templateId\\\":\\\"4\\\",\\\"columnName\\\":null,\\\"chineseName\\\":\\\"近28天内，家庭成员或同行人员是否有流行病学史或密接史？\\\",\\\"isCached\\\":null,\\\"columnType\\\":\\\"radio\\\",\\\"createBy\\\":\\\"\\\",\\\"createTime\\\":\\\"2021-09-08 08:54:58\\\",\\\"updateBy\\\":\\\"\\\",\\\"updateTime\\\":\\\"2021-09-08 09:42:40\\\",\\\"remark\\\":null,\\\"selectOptions\\\":\\\"[{\\\\\\\"label\\\\\\\":\\\\\\\"A.有\\\\\\\",\\\\\\\"value\\\\\\\":0},{\\\\\\\"label\\\\\\\":\\\\\\\"B.无\\\\\\\",\\\\\\\"value\\\\\\\":1}]\\\",\\\"sort\\\":\\\"2\\\",\\\"isEnabled\\\":\\\"0\\\",\\\"value\\\":1},{\\\"detailId\\\":\\\"9\\\",\\\"templateId\\\":\\\"4\\\",\\\"columnName\\\":null,\\\"chineseName\\\":\\\"是否关注每日疫情风险地区动态更新情况？\\\",\\\"isCached\\\":null,\\\"columnType\\\":\\\"radio\\\",\\\"createBy\\\":\\\"\\\",\\\"createTime\\\":\\\"2021-09-08 08:55:21\\\",\\\"updateBy\\\":\\\"\\\",\\\"updateTime\\\":\\\"2021-09-08 13:27:38\\\",\\\"remark\\\":null,\\\"selectOptions\\\":\\\"[{\\\\\\\"label\\\\\\\":\\\\\\\"A.是\\\\\\\",\\\\\\\"value\\\\\\\":0},{\\\\\\\"label\\\\\\\":\\\\\\\"B.否\\\\\\\",\\\\\\\"value\\\\\\\":1}]\\\",\\\"sort\\\":\\\"3\\\",\\\"isEnabled\\\":\\\"0\\\",\\\"value\\\":1},{\\\"detailId\\\":\\\"10\\\",\\\"templateId\\\":\\\"4\\\",\\\"columnName\\\":null,\\\"chineseName\\\":\\\"所在片区\\\",\\\"isCached\\\":null,\\\"columnType\\\":\\\"radio\\\",\\\"createBy\\\":\\\"\\\",\\\"createTime\\\":\\\"2021-09-08 09:04:09\\\",\\\"updateBy\\\":\\\"\\\",\\\"updateTime\\\":\\\"2021-09-08 13:27:38\\\",\\\"remark\\\":null,\\\"selectOptions\\\":\\\"[{\\\\\\\"label\\\\\\\":\\\\\\\"A.1片区，防空指挥部\\\\\\\",\\\\\\\"value\\\\\\\":0},{\\\\\\\"label\\\\\\\":\\\\\\\"B.2片区，许超\\\\\\\",\\\\\\\"value\\\\\\\":1},{\\\\\\\"label\\\\\\\":\\\\\\\"C.3片区，陈静洁\\\\\\\",\\\\\\\"value\\\\\\\":2},{\\\\\\\"label\\\\\\\":\\\\\\\"D.4片区，王芳芳\\\\\\\",\\\\\\\"value\\\\\\\":3},{\\\\\\\"label\\\\\\\":\\\\\\\"E.5片区，刘思烨\\\\\\\",\\\\\\\"value\\\\\\\":4},{\\\\\\\"label\\\\\\\":\\\\\\\"F.6片区，张余芬\\\\\\\",\\\\\\\"value\\\\\\\":5},{\\\\\\\"label\\\\\\\":\\\\\\\"G.7片区，李鉴宏\\\\\\\",\\\\\\\"value\\\\\\\":6},{\\\\\\\"label\\\\\\\":\\\\\\\"H.8片区，朱建荣\\\\\\\",\\\\\\\"value\\\\\\\":7},{\\\\\\\"label\\\\\\\":\\\\\\\"I.9片区，章宏燕\\\\\\\",\\\\\\\"value\\\\\\\":8},{\\\\\\\"label\\\\\\\":\\\\\\\"J.10片区，孙文娟\\\\\\\",\\\\\\\"value\\\\\\\":9},{\\\\\\\"label\\\\\\\":\\\\\\\"K.11片区，许军\\\\\\\",\\\\\\\"value\\\\\\\":10},{\\\\\\\"label\\\\\\\":\\\\\\\"L.12片区，朱宏英\\\\\\\",\\\\\\\"value\\\\\\\":11},{\\\\\\\"label\\\\\\\":\\\\\\\"M.13片区，戴亚萍\\\\\\\",\\\\\\\"value\\\\\\\":12},{\\\\\\\"label\\\\\\\":\\\\\\\"N.14片区，顾岚\\\\\\\",\\\\\\\"value\\\\\\\":13},{\\\\\\\"label\\\\\\\":\\\\\\\"O.15片区，陆振亚\\\\\\\",\\\\\\\"value\\\\\\\":14},{\\\\\\\"label\\\\\\\":\\\\\\\"P.16片区，高宇峰\\\\\\\",\\\\\\\"value\\\\\\\":15},{\\\\\\\"label\\\\\\\":\\\\\\\"Q.17片区，朱亚冰\\\\\\\",\\\\\\\"value\\\\\\\":16},{\\\\\\\"label\\\\\\\":\\\\\\\"R.18片区，胡新亚\\\\\\\",\\\\\\\"value\\\\\\\":17},{\\\\\\\"label\\\\\\\":\\\\\\\"S.19片区，付娟娟\\\\\\\",\\\\\\\"value\\\\\\\":18},{\\\\\\\"label\\\\\\\":\\\\\\\"T.20片区，魏莉敏\\\\\\\",\\\\\\\"value\\\\\\\":19},{\\\\\\\"label\\\\\\\":\\\\\\\"U.21片区，顾惠芳\\\\\\\",\\\\\\\"value\\\\\\\":20},{\\\\\\\"label\\\\\\\":\\\\\\\"V.22片区，周政尹\\\\\\\",\\\\\\\"value\\\\\\\":21},{\\\\\\\"label\\\\\\\":\\\\\\\"W.23片区，朱晓素\\\\\\\",\\\\\\\"value\\\\\\\":22},{\\\\\\\"label\\\\\\\":\\\\\\\"X.24片区，朱亚芹\\\\\\\",\\\\\\\"value\\\\\\\":23},{\\\\\\\"label\\\\\\\":\\\\\\\"Y.25片区，袁雪梅\\\\\\\",\\\\\\\"value\\\\\\\":24},{\\\\\\\"label\\\\\\\":\\\\\\\"Z.26片区，杨秋月\\\\\\\",\\\\\\\"value\\\\\\\":25},{\\\\\\\"label\\\\\\\":\\\\\\\"9.27片区，孙怡\\\\\\\",\\\\\\\"value\\\\\\\":26},{\\\\\\\"label\\\\\\\":\\\\\\\"9.28片区，周美芳\\\\\\\",\\\\\\\"value\\\\\\\":27},{\\\\\\\"label\\\\\\\":\\\\\\\"9.29片区，王敏娟\\\\\\\",\\\\\\\"value\\\\\\\":28},{\\\\\\\"label\\\\\\\":\\\\\\\"9.30片区，陈晓庆\\\\\\\",\\\\\\\"value\\\\\\\":29},{\\\\\\\"label\\\\\\\":\\\\\\\"9.31片区，曹维宁\\\\\\\",\\\\\\\"value\\\\\\\":30},{\\\\\\\"label\\\\\\\":\\\\\\\"9.32片区，夏菊芳\\\\\\\",\\\\\\\"value\\\\\\\":31},{\\\\\\\"label\\\\\\\":\\\\\\\"9.33片区，杨芸\\\\\\\",\\\\\\\"value\\\\\\\":32}]\\\",\\\"sort\\\":\\\"4\\\",\\\"isEnabled\\\":\\\"0\\\",\\\"value\\\":1},{\\\"detailId\\\":\\\"11\\\",\\\"templateId\\\":\\\"4\\\",\\\"columnName\\\":null,\\\"chineseName\\\":\\\"明天吃饭吗\\\",\\\"isCached\\\":null,\\\"columnType\\\":\\\"radio\\\",\\\"createBy\\\":\\\"\\\",\\\"createTime\\\":\\\"2021-09-08 17:44:44\\\",\\\"updateBy\\\":\\\"\\\",\\\"updateTime\\\":\\\"2021-09-08 17:44:44\\\",\\\"remark\\\":null,\\\"selectOptions\\\":\\\"[{\\\\\\\"label\\\\\\\":\\\\\\\"吃\\\\\\\",\\\\\\\"value\\\\\\\":0},{\\\\\\\"label\\\\\\\":\\\\\\\"不吃\\\\\\\",\\\\\\\"value\\\\\\\":1}]\\\",\\\"sort\\\":\\\"5\\\",\\\"isEnabled\\\":\\\"0\\\",\\\"value\\\":1},{\\\"detailId\\\":\\\"12\\\",\\\"templateId\\\":\\\"4\\\",\\\"columnName\\\":null,\\\"chineseName\\\":\\\"吃什么\\\",\\\"isCached\\\":null,\\\"columnType\\\":\\\"input\\\",\\\"createBy\\\":\\\"\\\",\\\"createTime\\\":\\\"2021-09-08 17:44:56\\\",\\\"updateBy\\\":\\\"\\\",\\\"updateTime\\\":\\\"2021-09-08 17:44:56\\\",\\\"remark\\\":null,\\\"selectOptions\\\":null,\\\"sort\\\":\\\"6\\\",\\\"isEnabled\\\":\\\"0\\\",\\\"value\\\":\\\"1111\\\"},{\\\"detailId\\\":\\\"13\\\",\\\"templateId\\\":\\\"4\\\",\\\"columnName\\\":null,\\\"chineseName\\\":\\\"菜品\\\",\\\"isCached\\\":null,\\\"columnType\\\":\\\"checkbox\\\",\\\"createBy\\\":\\\"\\\",\\\"createTime\\\":\\\"2021-09-08 17:45:34\\\",\\\"updateBy\\\":\\\"\\\",\\\"updateTime\\\":\\\"2021-09-08 17:45:34\\\",\\\"remark\\\":null,\\\"selectOptions\\\":\\\"[{\\\\\\\"label\\\\\\\":\\\\\\\"咸菜\\\\\\\",\\\\\\\"value\\\\\\\":0},{\\\\\\\"label\\\\\\\":\\\\\\\"萝卜干\\\\\\\",\\\\\\\"value\\\\\\\":1},{\\\\\\\"label\\\\\\\":\\\\\\\"窝窝头\\\\\\\",\\\\\\\"value\\\\\\\":2},{\\\\\\\"label\\\\\\\":\\\\\\\"酸豆角\\\\\\\",\\\\\\\"value\\\\\\\":3}]\\\",\\\"sort\\\":\\\"7\\\",\\\"isEnabled\\\":\\\"0\\\",\\\"value\\\":[1,2]}]\"";
 
@@ -345,6 +357,38 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                         appNotReportedService.deleteDatas(ids); // 删除未填报信息
                     }
                 }
+            }
+                //异常项配置 选中后发送短信通知
+            if(saveDTO.getExceptionStatus()!=null&&1==saveDTO.getExceptionStatus()){
+                QueryWrapper<AppSmsConfig> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("is_enabled", 0);
+                queryWrapper.eq("type", RemindTypeEnums.EXCEPTION_REMIND.getCode());
+                List<AppSmsConfig> smsConfigList = smsConfigService.list(queryWrapper);
+                if(ObjectUtil.isNotEmpty(smsConfigList)) {
+                    String mobile="";
+                    for (AppSmsConfig appSmsConfig : smsConfigList) {
+                       switch (appSmsConfig.getReminder()){
+                           case 1:
+                               mobile = SecurityUtils.getLoginUser().getUser().getPhonenumber();
+                               break;
+                           case 2:
+                               mobile = smsConfigService.getLeaderPhone();
+                               break;
+                           case 3:
+                               mobile = smsConfigService.getAppointPhone(appSmsConfig.getAppointUser());
+                               break;
+                       }
+                    }
+                    //发送短信
+                    ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
+                    zhSmsDTO.setExt(ext);
+                    zhSmsDTO.setMessage(message);
+                    zhSmsDTO.setMobile(mobile);
+                    zhSmsDTO.setUid(uId);
+                    zhSmsDTO.setUserpwd(userPwd);
+                    smsConfigService.noticeReportBySms(zhSmsDTO);
+                }
+
             }
             topicDataService.resolve(saveDTO, info);
             //二维码颜色
