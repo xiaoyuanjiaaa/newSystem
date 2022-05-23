@@ -7,8 +7,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.enums.RemindTypeEnums;
+import com.ruoyi.system.dto.ZhSmsDTO;
+import com.ruoyi.system.entity.AppSmsConfig;
 import com.ruoyi.system.entity.NameConfig;
+import com.ruoyi.system.service.IAppSmsConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.annotation.DataSource;
@@ -31,11 +39,24 @@ import com.ruoyi.system.service.ISysConfigService;
 @Service
 public class SysConfigServiceImpl implements ISysConfigService
 {
+    @Value("${smsZh.sms.uid}")
+    private String uId;
+
+    @Value("${smsZh.sms.userPwd}")
+    private String userPwd;
+
+    @Value("${smsZh.sms.ext}")
+    private String ext;
+
+    @Value("${smsZh.sms.message}")
+    private String message;
     @Autowired
     private SysConfigMapper configMapper;
 
     @Autowired
     private RedisCache redisCache;
+    @Autowired
+    private IAppSmsConfigService smsConfigService;
 
     /**
      * 项目启动时，初始化参数到缓存
@@ -229,5 +250,33 @@ public class SysConfigServiceImpl implements ISysConfigService
             return map;
         }
         return null;
+    }
+
+    @Override
+    public AjaxResult sendPhone() {
+        String mobile = "";
+        QueryWrapper<AppSmsConfig> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_enabled", 0);
+        queryWrapper.eq("type", RemindTypeEnums.NOT_FILL_REMIND.getCode());
+        List<AppSmsConfig> smsConfigList = smsConfigService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(smsConfigList)) {
+            return AjaxResult.error("没有数据");
+        }
+        String a = "{\"黄耳东\":\"13912350608\"}";
+                        //mobile = smsConfigService.getSelfPhone();
+                        //mobile = smsConfigService.getLeaderPhone();
+                        mobile = smsConfigService.getAppointPhone(a);
+
+
+
+        //发送短信
+        ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
+        zhSmsDTO.setExt(ext);
+        zhSmsDTO.setMessage(message);
+        zhSmsDTO.setMobile(mobile);
+        zhSmsDTO.setUid(uId);
+        zhSmsDTO.setUserpwd(userPwd);
+        //smsConfigService.noticeReportBySms(zhSmsDTO);
+        return AjaxResult.success(mobile);
     }
 }

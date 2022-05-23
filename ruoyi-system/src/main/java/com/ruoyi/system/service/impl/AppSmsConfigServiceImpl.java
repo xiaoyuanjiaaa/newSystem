@@ -48,10 +48,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -248,14 +245,19 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
 
    @Override
    public String getLeaderPhone() {
+      AppHealthReportCountDTO appHealthReportCountDTO = new AppHealthReportCountDTO();
+      appHealthReportCountDTO.setCurrentDay(LocalDate.now());
+      appHealthReportCountDTO.setPageSize(10000);
+      PageInfo<SysUser> userPageInfo =  healthReportService.pageSysUser(appHealthReportCountDTO);
       List<SysDept> list=sysDeptService.list(new QueryWrapper<>());
       if(ObjectUtil.isNull(list)){
          return null;
       }
-      List<String> phoneList=list.stream().map(SysDept::getPhone).collect(Collectors.toList());
+      List<Long> deptIds=userPageInfo.getList().stream().map(SysUser::getDeptId).distinct().collect(Collectors.toList());
+      List<SysDept> deptList=sysDeptService.list(new LambdaQueryWrapper<SysDept>().in(SysDept::getDeptId,deptIds));
       StringBuffer mobile = new StringBuffer();
-      for (String phone : phoneList) {
-            mobile.append(phone);
+      for (SysDept dept : deptList) {
+            mobile.append(dept.getPhone());
             mobile.append(",");
       }
       mobile.deleteCharAt(mobile.length()-1);

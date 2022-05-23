@@ -80,6 +80,7 @@ public class SmsTask {
             }
         }
 
+            LoggerFactory.getLogger(SmsTask.class).error(mobile.toString());
 
         //发送短信
         ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
@@ -88,7 +89,7 @@ public class SmsTask {
         zhSmsDTO.setMobile(mobile);
         zhSmsDTO.setUid(uId);
         zhSmsDTO.setUserpwd(userPwd);
-        //smsConfigService.noticeReportBySms(zhSmsDTO);
+        smsConfigService.noticeReportBySms(zhSmsDTO);
     }
 
 

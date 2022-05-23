@@ -135,6 +135,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers("/api/appPersonWx/**").permitAll()
                 .antMatchers("/pubicApi/**").permitAll()
                 .antMatchers("/system/config/nameConfig").permitAll()
+                .antMatchers("/appTemplateDetail/listAppTemplateDetail/{templateId}").permitAll()
 //                .antMatchers("/system/skm/getSuKangMaInfo").permitAll()
                 // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest().authenticated()

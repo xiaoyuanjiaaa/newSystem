@@ -3,6 +3,7 @@ package com.ruoyi.system.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONArray;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
@@ -69,7 +70,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
     @Value("${smsZh.sms.ext}")
     private String ext;
 
-    private String message="";
+    private String message="您的填报有异常";
     @Resource
     private AppHealthReportMapper appHealthReportMapper;
 
@@ -372,7 +373,8 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                                mobile = SecurityUtils.getLoginUser().getUser().getPhonenumber();
                                break;
                            case 2:
-                               mobile = smsConfigService.getLeaderPhone();
+                               SysDept sysDept=deptService.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptId, SecurityUtils.getDeptId()));
+                               mobile = sysDept.getPhone();
                                break;
                            case 3:
                                mobile = smsConfigService.getAppointPhone(appSmsConfig.getAppointUser());
@@ -518,6 +520,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
         queryWrapper.eq("duty_status", DutyStatusEnums.ON_DUTY.getCode());
         int onDutyCount = count(queryWrapper);
         log.info("在岗人数onDudyCount==========================="+onDutyCount);
+
         //统计未填报的数据
         //统计当天所有未填报的数据
         QueryWrapper<AppNotReported> wrapper = new QueryWrapper<>();
@@ -531,7 +534,8 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
         int count1 = appNotReportedService.count(wrapper); // 未填报
         // 统计当天所有人
         int countUser = count1 + count; //当天人数
-
+        //统计不在岗人数
+        int outDutyCount = countUser-onDutyCount;
         // 统计部门完成情况
         QueryWrapper<SysDept> sysDeptQueryWrapper = new QueryWrapper<>();
         sysDeptQueryWrapper.ne("level", "1"); // 所有部门
@@ -558,6 +562,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                     .deptCount(list.size())
                     .deptComplete(list.size())
                     .onDutyCount(onDutyCount)
+                    .outDutyCount(outDutyCount)
                     .build();
             return countCompleteNumber;
         }
@@ -573,6 +578,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                 .deptCount(list.size())
                 .deptComplete(list1.size())
                 .onDutyCount(onDutyCount)
+                .outDutyCount(outDutyCount)
                 .build();
         return countCompleteNumber;
 

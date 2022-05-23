@@ -35,5 +35,8 @@ public class CountCompleteNumber {
     @ApiModelProperty("在岗人数")
     private Integer onDutyCount;
 
+    @ApiModelProperty("未在岗人数")
+    private Integer outDutyCount;
+
 
 }
