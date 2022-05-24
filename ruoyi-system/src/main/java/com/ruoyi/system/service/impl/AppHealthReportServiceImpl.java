@@ -283,6 +283,20 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
     @Override
 //    @Transactional
     public String addAppHealthReport(AppHealthReportSaveDTO saveDTO) {
+        //获取第一针接种时间
+        String firstStitchTime = saveDTO.getFirstStitchTime ();
+        //获取第二针接种时间
+        String twoStitchTime = saveDTO.getTwoStitchTime ();
+        //获取第三针接种时间
+        String threeStitchTime = saveDTO.getThreeStitchTime ();
+        //比较第一针,第二针接种时间接种时间,第二针接种时间早于第一针接种时间compare小于0
+        int compare = twoStitchTime.compareTo (firstStitchTime);
+        //比较第二针,第三针接种时间接种时间,第三针接种时间早于第二针接种时间compare1小于0
+        int compare1 = threeStitchTime.compareTo (twoStitchTime);
+        if ( compare <= 0 || compare1 <= 0 ){
+            //返回异常信息
+            throw  new CustomException("疫苗接种时间应不早于上一针时间!!!");
+        }
         return Optional.ofNullable(saveDTO).map(dto -> {
             if(saveDTO.getAppSource() !=null && saveDTO.getAppSource() == 1){
                 SysUser sysUser = userService.getOne(new QueryWrapper<SysUser>().eq("phonenumber",saveDTO.getReportPhone()));
