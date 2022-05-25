@@ -21,6 +21,7 @@ import com.ruoyi.common.enums.RemindObjectEnums;
 import com.ruoyi.common.enums.RemindTypeEnums;
 import com.ruoyi.common.enums.SuccessEnums;
 import com.ruoyi.common.exception.CustomException;
+import com.ruoyi.common.exception.job.TaskException;
 import com.ruoyi.common.utils.CheckUtil;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.statics.ConstantDic;
@@ -37,6 +38,7 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import org.apache.axis.wsdl.symbolTable.SchemaUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,7 +172,10 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
       String response = null;
       try {
          response = client.newCall(request).execute().body().string();
+         log.info("****************************sendMessageUrl:" + sendMessageUrl);
+         log.info("****************************response:" + response);
       } catch (IOException e) {
+         log.info("====================================sendMessageUrl:" + sendMessageUrl);
          e.printStackTrace();
          throw new CustomException("调用中国移动短信返回数据异常");
       }
@@ -191,7 +196,7 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
    }
 
    @Override
-   public ResultVO addSmsConfig(AppSmsConfig appSmsConfig) {
+   public ResultVO addSmsConfig(AppSmsConfig appSmsConfig){
       LambdaQueryWrapper<AppSmsConfig> queryWrapper = new LambdaQueryWrapper<>();
       queryWrapper.eq(AppSmsConfig::getSmsTime,appSmsConfig.getSmsTime());
       List<AppSmsConfig> result=appSmsConfigService.list(queryWrapper);
@@ -239,7 +244,7 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
       }
       mobile.deleteCharAt(mobile.length()-1);
 
-      log.error(mobile.toString());
+      log.info("手机号：++++++++++++++"+mobile);
       return mobile.toString();
    }
 
@@ -276,6 +281,7 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
          mobile.append(",");
       }
       mobile.deleteCharAt(mobile.length()-1);
+      log.info("手机号：++++++++++++++"+mobile);
       return mobile.toString();
    }
 }

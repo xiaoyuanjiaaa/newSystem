@@ -30,6 +30,7 @@ public class Option {
     public  static class SelectOptions{
         private String label;
         private int value;
+        private Boolean exceptionStatus;
 
     }
 }
