@@ -131,10 +131,10 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
             queryWrapper.like("report_name", reportDTO.getName());
         }
         if (StringUtil.isNotEmpty(reportDTO.getMinTemperature())) {
-            queryWrapper.ge("report_temperature", reportDTO.getMinTemperature());
+            queryWrapper.ge("report_temperature", Integer.parseInt (reportDTO.getMinTemperature()));
         }
         if (StringUtil.isNotEmpty(reportDTO.getMaxTemperature())) {
-            queryWrapper.le("report_temperature", reportDTO.getMaxTemperature());
+            queryWrapper.le("report_temperature", Integer.parseInt (reportDTO.getMaxTemperature()));
         }
         if (reportDTO.getStartTime() != null) {
             queryWrapper.ge("report_time", reportDTO.getStartTime());
