@@ -122,7 +122,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
         if (StringUtil.isNotEmpty(reportDTO.getJobNum())) {
             SysUser user = userService.selectUserByJonNumber(reportDTO.getJobNum());
             if (user == null) {
-                queryWrapper.eq("1", "2");
+//                queryWrapper.eq("1", "2");
             } else {
                 queryWrapper.eq("app_health_report.person_id", user.getPersonId());
             }
@@ -289,13 +289,16 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
         String twoStitchTime = saveDTO.getTwoStitchTime ();
         //获取第三针接种时间
         String threeStitchTime = saveDTO.getThreeStitchTime ();
-        //比较第一针,第二针接种时间接种时间,第二针接种时间早于第一针接种时间compare小于0
-        int compare = twoStitchTime.compareTo (firstStitchTime);
-        //比较第二针,第三针接种时间接种时间,第三针接种时间早于第二针接种时间compare1小于0
-        int compare1 = threeStitchTime.compareTo (twoStitchTime);
-        if ( compare <= 0 || compare1 <= 0 ){
-            //返回异常信息
-            throw  new CustomException("疫苗接种时间应不早于上一针时间!!!");
+        //非空校验
+        if ( StringUtils.isNotBlank (firstStitchTime) && StringUtils.isNotBlank (twoStitchTime) && StringUtils.isNotBlank (threeStitchTime) ){
+            //比较第一针,第二针接种时间接种时间,第二针接种时间早于第一针接种时间compare小于0
+            int compare = twoStitchTime.compareTo (firstStitchTime);
+            //比较第二针,第三针接种时间接种时间,第三针接种时间早于第二针接种时间compare1小于0
+            int compare1 = threeStitchTime.compareTo (twoStitchTime);
+            if ( compare <= 0 || compare1 <= 0 ){
+                //返回异常信息
+                throw  new CustomException("疫苗接种时间应不早于上一针时间!!!");
+            }
         }
         return Optional.ofNullable(saveDTO).map(dto -> {
             if(saveDTO.getAppSource() !=null && saveDTO.getAppSource() == 1){
