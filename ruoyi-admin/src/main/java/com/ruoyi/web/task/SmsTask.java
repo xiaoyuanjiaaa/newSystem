@@ -1,11 +1,13 @@
 package com.ruoyi.web.task;
 
+import cn.hutool.cron.CronUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.github.pagehelper.PageInfo;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.enums.RemindTypeEnums;
+import com.ruoyi.quartz.util.CronUtils;
 import com.ruoyi.system.dto.AppHealthReportCountDTO;
 import com.ruoyi.system.dto.ZhSmsDTO;
 import com.ruoyi.system.entity.AppSmsConfig;
@@ -23,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 
-@Component
+@Component()
 public class SmsTask {
 
 
@@ -46,7 +48,7 @@ public class SmsTask {
     @Autowired
     private IAppHealthReportService healthReportService;
 
-    @Scheduled(cron = "0 */60 * * * ?")
+    @Scheduled(cron = "0/60 * * * * ?")
     @PostConstruct
     public void noticeUserHealthReport() {
         LoggerFactory.getLogger(SmsTask.class).error("定时任务开始");
@@ -59,7 +61,7 @@ public class SmsTask {
         queryWrapper.eq("is_enabled", 0);
         queryWrapper.eq("type", RemindTypeEnums.NOT_FILL_REMIND.getCode());
         List<AppSmsConfig> smsConfigList = smsConfigService.list(queryWrapper);
-        if (CollectionUtils.isEmpty(smsConfigList)) {
+                if (CollectionUtils.isEmpty(smsConfigList)) {
             return;
         }
         for (AppSmsConfig appSmsConfig : smsConfigList) {
@@ -77,19 +79,16 @@ public class SmsTask {
                         mobile = smsConfigService.getAppointPhone(appSmsConfig.getAppointUser());
                         break;
                 }
+                //发送短信
+                ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
+                zhSmsDTO.setExt(ext);
+                zhSmsDTO.setMessage(message);
+                zhSmsDTO.setMobile(mobile);
+                zhSmsDTO.setUid(uId);
+                zhSmsDTO.setUserpwd(userPwd);
+                smsConfigService.noticeReportBySms(zhSmsDTO);
             }
         }
-
-            LoggerFactory.getLogger(SmsTask.class).error(mobile.toString());
-
-        //发送短信
-        ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
-        zhSmsDTO.setExt(ext);
-        zhSmsDTO.setMessage(message);
-        zhSmsDTO.setMobile(mobile);
-        zhSmsDTO.setUid(uId);
-        zhSmsDTO.setUserpwd(userPwd);
-        //smsConfigService.noticeReportBySms(zhSmsDTO);
     }
 
 

@@ -45,7 +45,7 @@ public class AppHealthReportDTO extends PageDomain {
     private Long personId;
 
     @ApiModelProperty("在岗状态 0在岗 1休息  默认为空")
-    private Integer dutyStatus;
+    private Integer onDuty;
 
 
 }

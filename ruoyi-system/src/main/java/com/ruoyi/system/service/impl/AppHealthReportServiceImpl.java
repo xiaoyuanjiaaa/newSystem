@@ -70,7 +70,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
     @Value("${smsZh.sms.ext}")
     private String ext;
 
-    private String message="您的填报有异常";
+    private String message="【无锡二院】您的填报有异常";
     @Resource
     private AppHealthReportMapper appHealthReportMapper;
 
@@ -159,8 +159,8 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                 queryWrapper.in("app_health_report.person_id", sysUsers.stream().map(SysUser::getPersonId).collect(Collectors.toList()));
             }
         }
-        if (reportDTO.getDutyStatus() != null) {
-            queryWrapper.eq("duty_status", reportDTO.getDutyStatus());
+        if (reportDTO.getOnDuty() != null) {
+            queryWrapper.eq("duty_status", reportDTO.getOnDuty());
         }
         PageHelper.startPage(reportDTO.getPageNum(), reportDTO.getPageSize(), reportDTO.getOrderBy());
         List<AppHealthReportQueryVO> appHealthReports = baseMapper.selectListByWrapper(queryWrapper);
@@ -301,114 +301,123 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
             }
         }
         return Optional.ofNullable(saveDTO).map(dto -> {
-            if(saveDTO.getAppSource() !=null && saveDTO.getAppSource() == 1){
-                SysUser sysUser = userService.getOne(new QueryWrapper<SysUser>().eq("phonenumber",saveDTO.getReportPhone()));
-                if(sysUser != null){
-                    saveDTO.setPersonId(sysUser.getPersonId());
-                }
-            }
-
-            //代为填报、无需填报时需要从user表找到该用户的工作区域
-            if(StringUtil.isEmpty(dto.getWorkPlace())){
-                String phone = saveDTO.getReportPhone();
-                SysUser sysUser = userService.getOne(new QueryWrapper<SysUser>().eq("phonenumber",phone));
-                if(sysUser!=null)dto.setWorkPlace(sysUser.getWorkPlace());
-            }
-            //工作场所和核酸检测频次
-            if(StringUtil.isNotEmpty(dto.getWorkPlace())){
-                WorkPlaceFrequency wf = workPlaceService.getOne(new QueryWrapper<WorkPlaceFrequency>().eq("work_place",dto.getWorkPlace()));
-                if(wf!=null)saveDTO.setFrequency(wf.getFrequencyName());
-            }
-
-            //根据手机号查询用户信息以及部门信息
-            List<SysUser> users = userService.list(new QueryWrapper<SysUser>().eq("phonenumber", saveDTO.getReportPhone()));
-            if (ObjectUtil.isNotEmpty(users)) {
-                SysUser user = users.get(0);
-                //判断user是否被删除or禁用
-                if (user.getStatus().equals("1") || user.getDelFlag().equals("2")) {
-                    throw new CustomException("没有权限，请联系管理员");
-                }
-                if (user.getDeptId() != null) {
-                    if (user.getDeptId() != null) {
-                        SysDept dept = deptService.selectDeptById(user.getDeptId());
-                        if(dept != null){
-                            saveDTO.setDeptName(dept.getDeptName());
+                    if (saveDTO.getAppSource() != null && saveDTO.getAppSource() == 1) {
+                        SysUser sysUser = userService.getOne(new QueryWrapper<SysUser>().eq("phonenumber", saveDTO.getReportPhone()));
+                        if (sysUser != null) {
+                            saveDTO.setPersonId(sysUser.getPersonId());
                         }
                     }
-                    saveDTO.setReportName(user.getNickName());
-                    saveDTO.setIdNum(user.getIdNum());
-                    saveDTO.setJobNumber(user.getJobNumber());
-                    saveDTO.setIsPrivate(user.getIsPrivate());
-                    saveDTO.setIsTemporary(user.getIsTemporary());
-                    saveDTO.setPostLevel(user.getPostLevel());
-                }
-            }
-            AppHealthReportVO po = getInfoByPersonId(saveDTO.getPersonId());
-            AppHealthReport info = new AppHealthReport();
-            //解析模板  在院状态添加到新字段里
-            Gson gson=new Gson();
-            List<Option> list = gson.fromJson(dto.getReportJson(), new TypeToken<List<Option>>() {
-            }.getType());
-            for (Option option : list) {
-                if ("21".equals(option.getDetailId())) {
-                    info.setDutyStatus((Integer) option.getValue());
-                }
-            }
-            BeanUtils.copyProperties(dto, info);
-                if (po != null && po.getReportId() != null && getTimeChange()) {
-                //在时间之内可以修改
-                info.setReportId(po.getReportId()).setUpdateTime(new Date()).setReportTime(new Date());
-                appHealthReportMapper.updateById(info);
-                SysUser sysUser = userMapper.selectByPersonId(saveDTO.getPersonId());
-                if(ObjectUtil.isNotEmpty(sysUser)){
-                    Long[] ids = new Long[]{sysUser.getUserId()};
-                    appNotReportedService.deleteDatas(ids); // 删除未填报信息
-                }
-            } else {
-                Long reportId = IdWorker.getId();
-                info.setCreateTime(new Date()).setReportTime(new Date()).setReportId(reportId);
-                int insert = appHealthReportMapper.insert(info);
-                if (insert == 1) {
-                    SysUser sysUser = userMapper.selectByPersonId(saveDTO.getPersonId());
-                    if(ObjectUtil.isNotEmpty(sysUser)){
-                        Long[] ids = new Long[]{sysUser.getUserId()};
-                        appNotReportedService.deleteDatas(ids); // 删除未填报信息
-                    }
-                }
-            }
-                //异常项配置 选中后发送短信通知
-            if(saveDTO.getExceptionStatus()!=null&&1==saveDTO.getExceptionStatus()){
-                QueryWrapper<AppSmsConfig> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("is_enabled", 0);
-                queryWrapper.eq("type", RemindTypeEnums.EXCEPTION_REMIND.getCode());
-                List<AppSmsConfig> smsConfigList = smsConfigService.list(queryWrapper);
-                if(ObjectUtil.isNotEmpty(smsConfigList)) {
-                    String mobile="";
-                    for (AppSmsConfig appSmsConfig : smsConfigList) {
-                       switch (appSmsConfig.getReminder()){
-                           case 1:
-                               mobile = SecurityUtils.getLoginUser().getUser().getPhonenumber();
-                               break;
-                           case 2:
-                               SysDept sysDept=deptService.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptId, SecurityUtils.getDeptId()));
-                               mobile = sysDept.getPhone();
-                               break;
-                           case 3:
-                               mobile = smsConfigService.getAppointPhone(appSmsConfig.getAppointUser());
-                               break;
-                       }
-                    }
-                    //发送短信
-                    ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
-                    zhSmsDTO.setExt(ext);
-                    zhSmsDTO.setMessage(message);
-                    zhSmsDTO.setMobile(mobile);
-                    zhSmsDTO.setUid(uId);
-                    zhSmsDTO.setUserpwd(userPwd);
-                    smsConfigService.noticeReportBySms(zhSmsDTO);
-                }
 
-            }
+                    //代为填报、无需填报时需要从user表找到该用户的工作区域
+                    if (StringUtil.isEmpty(dto.getWorkPlace())) {
+                        String phone = saveDTO.getReportPhone();
+                        SysUser sysUser = userService.getOne(new QueryWrapper<SysUser>().eq("phonenumber", phone));
+                        if (sysUser != null) dto.setWorkPlace(sysUser.getWorkPlace());
+                    }
+                    //工作场所和核酸检测频次
+                    if (StringUtil.isNotEmpty(dto.getWorkPlace())) {
+                        WorkPlaceFrequency wf = workPlaceService.getOne(new QueryWrapper<WorkPlaceFrequency>().eq("work_place", dto.getWorkPlace()));
+                        if (wf != null) saveDTO.setFrequency(wf.getFrequencyName());
+                    }
+
+                    //根据手机号查询用户信息以及部门信息
+                    List<SysUser> users = userService.list(new QueryWrapper<SysUser>().eq("phonenumber", saveDTO.getReportPhone()));
+                    if (ObjectUtil.isNotEmpty(users)) {
+                        SysUser user = users.get(0);
+                        //判断user是否被删除or禁用
+                        if (user.getStatus().equals("1") || user.getDelFlag().equals("2")) {
+                            throw new CustomException("没有权限，请联系管理员");
+                        }
+                        if (user.getDeptId() != null) {
+                            if (user.getDeptId() != null) {
+                                SysDept dept = deptService.selectDeptById(user.getDeptId());
+                                if (dept != null) {
+                                    saveDTO.setDeptName(dept.getDeptName());
+                                }
+                            }
+                            saveDTO.setReportName(user.getNickName());
+                            saveDTO.setIdNum(user.getIdNum());
+                            saveDTO.setJobNumber(user.getJobNumber());
+                            saveDTO.setIsPrivate(user.getIsPrivate());
+                            saveDTO.setIsTemporary(user.getIsTemporary());
+                            saveDTO.setPostLevel(user.getPostLevel());
+                        }
+                    }
+                    AppHealthReportVO po = getInfoByPersonId(saveDTO.getPersonId());
+                    AppHealthReport info = new AppHealthReport();
+                     log.info("++++++++++++++++++++++++++++++++++" + dto.getReportJson());
+                    //解析模板  在院状态添加到新字段里
+                    if(ObjectUtil.isNotNull(dto.getReportJson())){
+                    Gson gson = new Gson();
+                    List<Option> list = gson.fromJson(dto.getReportJson(), new TypeToken<List<Option>>() {
+                    }.getType());
+                        log.info("*******************" + list);
+                        for (Option option : list) {
+                            if (option.getDetailId() == 56) {
+                                log.info("=========" + option.getValue());
+                                Object value = option.getValue();
+                                if(value instanceof Double){
+                                    info.setDutyStatus(Integer.valueOf(((Double) value).intValue()));
+                                }else if(value instanceof Integer){
+                                    info.setDutyStatus((Integer) value);
+                                }
+
+                            }
+                            //异常项 短信发送
+                            Gson gsonSelection = new Gson();
+                            String selections = option.getSelectOptions();
+                            Object value = option.getValue();
+                            log.info(";;;;;;;;;;;;;;;;;;" + selections);
+                            if(ObjectUtil.isNotNull(selections)) {
+                            List<Option.SelectOptions> selectOptionsList = gsonSelection.fromJson(selections, new TypeToken<List<Option.SelectOptions>>() {
+                            }.getType());
+                            a:for (Option.SelectOptions selectOptions : selectOptionsList) {
+                                if(ObjectUtil.isNotNull(selectOptions.getExceptionStatus())){
+                                    if(value instanceof Double){
+                                        if (selectOptions.getValue() == Integer.valueOf(((Double) value).intValue()) && selectOptions.getExceptionStatus()) {
+                                            log.info("111111111111111111111111111111111");
+                                            this.sendException();
+                                            break a;
+                                        }
+                                    }else if(value instanceof String){
+                                        String[] values = value.toString().split(",");
+                                        for(String str:values){
+                                            if (selectOptions.getValue() == Integer.parseInt(str) && selectOptions.getExceptionStatus()) {
+                                                log.info("8888888888888888888888888888");
+                                                this.sendException();
+                                                break a;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                                }
+                        }
+
+                    BeanUtils.copyProperties(dto, info);
+                    if (po != null && po.getReportId() != null && getTimeChange()) {
+                        //在时间之内可以修改
+                        info.setReportId(po.getReportId()).setUpdateTime(new Date()).setReportTime(new Date());
+                        appHealthReportMapper.updateById(info);
+                        SysUser sysUser = userMapper.selectByPersonId(saveDTO.getPersonId());
+                        if (ObjectUtil.isNotEmpty(sysUser)) {
+                            Long[] ids = new Long[]{sysUser.getUserId()};
+                            appNotReportedService.deleteDatas(ids); // 删除未填报信息
+                        }
+                    } else {
+                        Long reportId = IdWorker.getId();
+                        info.setCreateTime(new Date()).setReportTime(new Date()).setReportId(reportId);
+                        int insert = appHealthReportMapper.insert(info);
+                        if (insert == 1) {
+                            SysUser sysUser = userMapper.selectByPersonId(saveDTO.getPersonId());
+                            if (ObjectUtil.isNotEmpty(sysUser)) {
+                                Long[] ids = new Long[]{sysUser.getUserId()};
+                                appNotReportedService.deleteDatas(ids); // 删除未填报信息
+                            }
+                        }
+                    }
             topicDataService.resolve(saveDTO, info);
             //二维码颜色
             Integer colour = 0;
@@ -1115,6 +1124,38 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
     public AppHealthReport getInfoByPersonIdTwo(Long personId) {
         AppHealthReport infoByPersonIdTwo = baseMapper.getInfoByPersonIdTwo(personId);
         return infoByPersonIdTwo;
+    }
+
+    public void sendException(){
+        QueryWrapper<AppSmsConfig> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_enabled", 0);
+        queryWrapper.eq("type", RemindTypeEnums.EXCEPTION_REMIND.getCode());
+        List<AppSmsConfig> smsConfigList = smsConfigService.list(queryWrapper);
+        if (ObjectUtil.isNotEmpty(smsConfigList)) {
+            String mobile = "";
+            for (AppSmsConfig appSmsConfig : smsConfigList) {
+                switch (appSmsConfig.getReminder()) {
+                    case 1:
+                        mobile = SecurityUtils.getLoginUser().getUser().getPhonenumber();
+                        break;
+                    case 2:
+                        SysDept sysDept = deptService.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptId, SecurityUtils.getDeptId()));
+                        mobile = sysDept.getPhone();
+                        break;
+                    case 3:
+                        mobile = smsConfigService.getAppointPhone(appSmsConfig.getAppointUser());
+                        break;
+                }
+            }
+            //发送短信
+            ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
+            zhSmsDTO.setExt(ext);
+            zhSmsDTO.setMessage(message);
+            zhSmsDTO.setMobile(mobile);
+            zhSmsDTO.setUid(uId);
+            zhSmsDTO.setUserpwd(userPwd);
+            smsConfigService.noticeReportBySms(zhSmsDTO);
+        }
     }
 
 }
