@@ -70,7 +70,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
     @Value("${smsZh.sms.ext}")
     private String ext;
 
-    private String message="【无锡二院】您的填报有异常";
+    private String message="";
     @Resource
     private AppHealthReportMapper appHealthReportMapper;
 
@@ -153,7 +153,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
             SysUser sysUser = new SysUser();
             sysUser.setDeptId(reportDTO.getDeptId());
             List<SysUser> sysUsers = userService.selectUserList(sysUser);
-            if (CollectionUtils.isEmpty(sysUsers)) {
+            if (CollectionUtils.isNotEmpty(sysUsers)) {
                 queryWrapper.eq("1", "2");
             } else {
                 queryWrapper.in("app_health_report.person_id", sysUsers.stream().map(SysUser::getPersonId).collect(Collectors.toList()));
@@ -356,13 +356,15 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                             if (option.getDetailId() == 56) {
                                 log.info("=========" + option.getValue());
                                 Object value = option.getValue();
-                                if(value instanceof Double){
+                                if (value instanceof Double) {
                                     info.setDutyStatus(Integer.valueOf(((Double) value).intValue()));
-                                }else if(value instanceof Integer){
+                                } else if (value instanceof Integer) {
                                     info.setDutyStatus((Integer) value);
                                 }
 
                             }
+                        }
+                        out:for (Option option : list) {
                             //异常项 短信发送
                             Gson gsonSelection = new Gson();
                             String selections = option.getSelectOptions();
@@ -371,13 +373,13 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                             if(ObjectUtil.isNotNull(selections)) {
                             List<Option.SelectOptions> selectOptionsList = gsonSelection.fromJson(selections, new TypeToken<List<Option.SelectOptions>>() {
                             }.getType());
-                            a:for (Option.SelectOptions selectOptions : selectOptionsList) {
+                            for (Option.SelectOptions selectOptions : selectOptionsList) {
                                 if(ObjectUtil.isNotNull(selectOptions.getExceptionStatus())){
                                     if(value instanceof Double){
                                         if (selectOptions.getValue() == Integer.valueOf(((Double) value).intValue()) && selectOptions.getExceptionStatus()) {
                                             log.info("111111111111111111111111111111111");
                                             this.sendException();
-                                            break a;
+                                            break out;
                                         }
                                     }else if(value instanceof String){
                                         String[] values = value.toString().split(",");
@@ -385,7 +387,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                                             if (selectOptions.getValue() == Integer.parseInt(str) && selectOptions.getExceptionStatus()) {
                                                 log.info("8888888888888888888888888888");
                                                 this.sendException();
-                                                break a;
+                                                break out;
                                             }
                                         }
                                     }
@@ -1137,24 +1139,27 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                 switch (appSmsConfig.getReminder()) {
                     case 1:
                         mobile = SecurityUtils.getLoginUser().getUser().getPhonenumber();
+                        message = "【无锡二院】您的填报有异常";
                         break;
                     case 2:
                         SysDept sysDept = deptService.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptId, SecurityUtils.getDeptId()));
+                        message = "【无锡二院】"+SecurityUtils.getLoginUser().getUser().getNickName()+"的填报有异常";
                         mobile = sysDept.getPhone();
                         break;
                     case 3:
                         mobile = smsConfigService.getAppointPhone(appSmsConfig.getAppointUser());
+                        message = "【无锡二院】"+SecurityUtils.getLoginUser().getUser().getNickName()+"的填报有异常";
                         break;
                 }
+                //发送短信
+                ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
+                zhSmsDTO.setExt(ext);
+                zhSmsDTO.setMessage(message);
+                zhSmsDTO.setMobile(mobile);
+                zhSmsDTO.setUid(uId);
+                zhSmsDTO.setUserpwd(userPwd);
+                smsConfigService.noticeReportBySms(zhSmsDTO);
             }
-            //发送短信
-            ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
-            zhSmsDTO.setExt(ext);
-            zhSmsDTO.setMessage(message);
-            zhSmsDTO.setMobile(mobile);
-            zhSmsDTO.setUid(uId);
-            zhSmsDTO.setUserpwd(userPwd);
-            smsConfigService.noticeReportBySms(zhSmsDTO);
         }
     }
 
