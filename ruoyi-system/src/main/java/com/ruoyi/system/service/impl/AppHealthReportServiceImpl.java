@@ -119,13 +119,16 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
     @Override
     public PageInfo<AppHealthReportQueryVO> pageAppHealthReport(AppHealthReportDTO reportDTO) {
         QueryWrapper<AppHealthReport> queryWrapper = new QueryWrapper<>();
-        if (StringUtil.isNotEmpty(reportDTO.getJobNum())) {
-            SysUser user = userService.selectUserByJonNumber(reportDTO.getJobNum());
-            if (user == null) {
+//        if (StringUtil.isNotEmpty(reportDTO.getJobNum())) {
+//            SysUser user = userService.selectUserByJonNumber(reportDTO.getJobNum());
+//            if (user == null) {
 //                queryWrapper.eq("1", "2");
-            } else {
-                queryWrapper.eq("app_health_report.person_id", user.getPersonId());
-            }
+//            } else {
+//                queryWrapper.eq("app_health_report.person_id", user.getPersonId());
+//            }
+//        }
+        if ( StringUtils.isNotEmpty (reportDTO.getJobNum ()) ){
+            queryWrapper.like ("app_health_report.job_number",reportDTO.getJobNum ());
         }
         if (StringUtil.isNotEmpty(reportDTO.getName())) {
             queryWrapper.like("report_name", reportDTO.getName());
