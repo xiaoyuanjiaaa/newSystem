@@ -129,7 +129,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
 //            }
 //        }
         if ( StringUtils.isNotEmpty (reportDTO.getJobNum ()) ){
-            queryWrapper.like ("app_health_report.job_number",reportDTO.getJobNum ());
+            queryWrapper.like ("su.job_number",reportDTO.getJobNum ());
         }
         if (StringUtil.isNotEmpty(reportDTO.getName())) {
             queryWrapper.like("report_name", reportDTO.getName());
