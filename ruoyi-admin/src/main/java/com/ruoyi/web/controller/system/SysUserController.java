@@ -495,10 +495,10 @@ public class SysUserController extends BaseController {
     @ResponseBody
     public ResultVO resetPwds(@RequestBody List<SysUser> users) {
         //判断是否为admin
-        boolean admin = SecurityUtils.getLoginUser().getUser().isAdmin();
-        if(!admin){
-            throw new CustomException("没有权限操作");
-        }
+//        boolean admin = SecurityUtils.getLoginUser().getUser().isAdmin();
+//        if(!admin){
+//            throw new CustomException("没有权限操作");
+//        }
         //遍历SysUser对象,
         for (SysUser user:users) {
             //校验是否可以操作,admin不可重置
