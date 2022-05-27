@@ -179,4 +179,5 @@ public interface SysUserMapper extends BaseMapper<SysUser>
     @Select("select app_version as appVersion , app_url as appUrl from app_version where is_deleted = 0 order by create_time desc limit 1 ")
     Map getAppVersion();
 
+    int updatepasswordById(SysUser user);
 }

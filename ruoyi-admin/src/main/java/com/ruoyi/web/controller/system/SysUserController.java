@@ -479,12 +479,35 @@ public class SysUserController extends BaseController {
     @PreAuthorize("@ss.hasPermi('system:user:resetPwd')")
     @Log(title = "用户管理", businessType = BusinessType.UPDATE)
     @PutMapping("/resetPwd")
-    public AjaxResult resetPwd(@RequestBody SysUser user)
-    {
+    public AjaxResult resetPwd(@RequestBody SysUser user) {
         userService.checkUserAllowed(user);
         user.setPassword(SecurityUtils.encryptPassword(user.getPassword()));
         user.setUpdateBy(getUsername());
         return toAjax(userService.resetPwd(user));
+    }
+    /**
+     * 批量重置密码
+     * @data 2022.5.26
+     */
+    @PreAuthorize("@ss.hasPermi('system:user:resetPwds')")
+    @Log(title = "用户管理", businessType = BusinessType.UPDATE)
+    @PutMapping("/resetPwds")
+    @ResponseBody
+    public ResultVO resetPwds(@RequestBody List<SysUser> users) {
+        //判断是否为admin
+        boolean admin = SecurityUtils.getLoginUser().getUser().isAdmin();
+        if(!admin){
+            throw new CustomException("没有权限操作");
+        }
+        //遍历SysUser对象,
+        for (SysUser user:users) {
+            //校验是否可以操作,admin不可重置
+            userService.checkUserAllowed(user);
+            //密码重置为123456
+            user.setPassword(SecurityUtils.encryptPassword("123456"));
+            userService.resetUsersPwd(user);
+        }
+        return new ResultVO<>(SuccessEnums.UPDATE_SUCCESS,null);
     }
 
     /**

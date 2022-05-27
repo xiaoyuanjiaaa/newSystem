@@ -286,4 +286,6 @@ public interface ISysUserService extends IService<SysUser>
      */
     Boolean updateRegister(SysRegister userRegister);
 
+
+    int resetUsersPwd(SysUser user);
 }
