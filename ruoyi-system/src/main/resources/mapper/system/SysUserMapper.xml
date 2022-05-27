@@ -399,4 +399,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<!-- 数据范围过滤 -->
 		${params.dataScope}
 	</select>
+
+	<delete id="updatepasswordById">
+		update sys_user set password =#{password} where user_id=#{userId}
+	</delete>
 </mapper>
