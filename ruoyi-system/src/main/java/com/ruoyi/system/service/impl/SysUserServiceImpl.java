@@ -94,6 +94,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper,SysUser> imple
     @Autowired
     private IAppRosterUserService rosterUserService;
 
+    @Autowired
+    private AppNotReportedMapper appNotReportedMapper;
+
     /**
      * 根据条件分页查询用户列表
      *
@@ -338,9 +341,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper,SysUser> imple
         // 新增用户与角色管理
         insertUserRole(user);
         //去除新增数据插入提示表
-//        if (rows == 1 && !"1".equals(user.getStatus())){
-//            appNotReportedService.saveData(user);
-//        }
+        if (rows == 1 && !"1".equals(user.getStatus())){
+            appNotReportedService.saveData(user);
+        }
         if(rows ==1 && !"1".equals(user.getStatus())){
             appChangeReportService.addChange(sysUser);
         }
