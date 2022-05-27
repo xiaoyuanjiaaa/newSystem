@@ -49,7 +49,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.jws.soap.SOAPBinding;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -492,18 +494,20 @@ public class SysUserController extends BaseController {
     @PreAuthorize("@ss.hasPermi('system:user:resetPwds')")
     @Log(title = "用户管理", businessType = BusinessType.UPDATE)
     @PutMapping("/resetPwds")
-    @ResponseBody
-    public ResultVO resetPwds(@RequestBody List<SysUser> users) {
+    public ResultVO resetPwds(String userIds) {
         //判断是否为admin
 //        boolean admin = SecurityUtils.getLoginUser().getUser().isAdmin();
 //        if(!admin){
 //            throw new CustomException("没有权限操作");
 //        }
-        //遍历SysUser对象,
-        for (SysUser user:users) {
-            //校验是否可以操作,admin不可重置
-            userService.checkUserAllowed(user);
-            //密码重置为123456
+        List<String> ids=Arrays.asList(userIds.split(","));
+        if(ids.contains("1")){
+            ids.remove("1");
+        }
+        for(String str:ids){
+            SysUser user = new SysUser();
+            Long userId=Long.parseLong(str);
+            user.setUserId(userId);
             user.setPassword(SecurityUtils.encryptPassword("123456"));
             userService.resetUsersPwd(user);
         }
