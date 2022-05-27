@@ -851,6 +851,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper,SysUser> imple
 
 
     @Override
+    @Transactional
     public int resetUsersPwd(SysUser user) {
         System.out.println(user);
         int a = userMapper.updatepasswordById(user);
