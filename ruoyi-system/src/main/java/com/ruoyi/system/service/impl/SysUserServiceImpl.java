@@ -370,9 +370,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper,SysUser> imple
      */
     @Override
     @Transactional
-    public int updateUser(SysUser user)
-    {
-
+    public int updateUser(SysUser user){
         Long userId = user.getUserId();
         SysUser sysUser = selectUserById(userId);
         // 删除用户与角色关联
@@ -390,7 +388,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper,SysUser> imple
         Long[] ids = new Long[]{userId};
 //            //  禁用 删除数据
         appNotReportedService.deleteDatas(ids);
-//        appNotReportedService.saveData(user);
+        appNotReportedService.saveData(user);
 //        }
 //        int num=0;
 //        int i = userMapper.updateUser(user);
@@ -402,9 +400,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper,SysUser> imple
         // 修改关联表数据
         if (a != 0){
             // 梯队人员信息
-            if (!user.getNickName().equals(sysUser.getNickName()) ||
-                    !user.getUserName().equals(sysUser.getUserName()) ||
-               !user.getPhonenumber().equals(sysUser.getPhonenumber())){
+            if (!user.getNickName().equals(sysUser.getNickName()) || !user.getUserName().equals(sysUser.getUserName())
+                    || !user.getPhonenumber().equals(sysUser.getPhonenumber())){
                 List<AppEpidemicUser> appEpidemicUsers = appEpidemicUserService.
                         list(new QueryWrapper<AppEpidemicUser>().eq("user_id", user.getUserId()));
                 if (!CollectionUtils.isEmpty(appEpidemicUsers)){
