@@ -265,7 +265,7 @@ public class SysConfigServiceImpl implements ISysConfigService
         String a = "{\"黄耳东\":\"13912350608\"}";
                         //mobile = smsConfigService.getSelfPhone();
                         //mobile = smsConfigService.getLeaderPhone();
-                        mobile = smsConfigService.getAppointPhone(a);
+                        //mobile = smsConfigService.getAppointPhone(a);
 
 
 

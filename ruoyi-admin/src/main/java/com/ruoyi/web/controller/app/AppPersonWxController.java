@@ -398,24 +398,6 @@ public class AppPersonWxController extends BaseController {
     @ApiOperation("通过身份证或者personId获取当天的预检分诊信息")
     @GetMapping("/getInfoById")
     public ResultVO<AppPersonWxVisit> getInfoById(AppPersonWxQueryDTO queryDTO) {
-        AppPersonWxVisitVO appPersonWxVisitVO = new AppPersonWxVisitVO();
-        AppPerson appPerson=appPersonService.getOne(new LambdaQueryWrapper<AppPerson>().eq(AppPerson::getPersonId, queryDTO.getId ()));
-        if(ObjectUtil.isNotNull(appPerson)){
-            appPersonWxVisitVO.setPersonName(appPerson.getPersonName());
-            appPersonWxVisitVO.setMobile(appPerson.getMobile());
-            appPersonWxVisitVO.setIdNum(appPerson.getIdNum());
-        }
-        LocalDateTime localDateTime = LocalDateTime.now();
-        localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        LambdaQueryWrapper<AppPersonWxVisit> queryWrapper=new LambdaQueryWrapper<AppPersonWxVisit> ().eq (AppPersonWxVisit :: getPersonId,appPerson.getPersonId())
-                .ge(AppPersonWxVisit::getCreateTime, localDateTime);
-        List<AppPersonWxVisit> appPersonWxVisits = appPersonWxVisitService.getBaseMapper ().selectList (queryWrapper);
-        if(ObjectUtil.isEmpty(appPersonWxVisits)){
-            return new ResultVO<>(SuccessEnums.USER_QUERY_SUCCESS,null);
-        }
-        Optional<AppPersonWxVisit> max = appPersonWxVisits.stream ().max (Comparator.comparing (AppPersonWxVisit :: getCreateTime));
-        AppPersonWxVisit appPersonWxVisit = max.get();
-        BeanUtils.copyProperties(appPersonWxVisit,appPersonWxVisitVO);
-            return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, appPersonWxVisitVO);
+        return appPersonWxVisitService.detail(queryDTO);
     }
 }

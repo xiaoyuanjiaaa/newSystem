@@ -3,6 +3,8 @@ package com.ruoyi.system.service;
 
 import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ruoyi.common.core.domain.model.ResultVO;
+import com.ruoyi.system.dto.AppPersonWxQueryDTO;
 import com.ruoyi.system.dto.AppPersonWxYuJianDTO;
 import com.ruoyi.system.dto.AppPersonWxYuJianVisitDTO;
 import com.ruoyi.system.entity.AppPersonWxVisit;
@@ -24,4 +26,6 @@ public interface AppPersonWxVisitService extends IService<AppPersonWxVisit> {
     List<AppPersonQueryWxVO> queryTotal(AppPersonWxYuJianVisitDTO queryDTO);
 
     Long queryIdListById(Long id);
+
+    ResultVO<AppPersonWxVisit> detail(AppPersonWxQueryDTO queryDTO);
 }

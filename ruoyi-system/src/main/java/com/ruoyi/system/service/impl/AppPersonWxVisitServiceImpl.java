@@ -4,9 +4,13 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ruoyi.common.core.domain.model.ResultVO;
+import com.ruoyi.common.enums.SuccessEnums;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.system.dto.AppPersonWxQueryDTO;
 import com.ruoyi.system.dto.AppPersonWxYuJianDTO;
 import com.ruoyi.system.dto.AppPersonWxYuJianVisitDTO;
 import com.ruoyi.system.entity.*;
@@ -15,14 +19,13 @@ import com.ruoyi.system.mapper.AppPersonWxMapper;
 import com.ruoyi.system.mapper.AppPersonWxVisitMapper;
 import com.ruoyi.system.service.*;
 import com.ruoyi.system.vo.AppPersonQueryWxVO;
+import com.ruoyi.system.vo.AppPersonWxVisitVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -169,4 +172,28 @@ public class AppPersonWxVisitServiceImpl extends ServiceImpl<AppPersonWxVisitMap
         return list;
     }
 
+    @Override
+    public ResultVO<AppPersonWxVisit> detail(AppPersonWxQueryDTO queryDTO) {
+        AppPersonWxVisitVO appPersonWxVisitVO = new AppPersonWxVisitVO();
+        List<AppPerson> appPersonList = new ArrayList<>();
+        if(queryDTO.getMobile()!=null){
+            appPersonList=appPersonService.list(new LambdaQueryWrapper<AppPerson>().eq(AppPerson::getIdNum, queryDTO.getId ()).eq(AppPerson::getMobile,queryDTO.getMobile()));
+        }else {
+            appPersonList = appPersonService.list(new LambdaQueryWrapper<AppPerson>().eq(AppPerson::getIdNum, queryDTO.getId()).orderByDesc(AppPerson::getUpdateTime));
+        }
+        AppPerson appPerson = appPersonList.stream().findFirst().orElse(null);
+        if(appPerson!=null){
+            appPersonWxVisitVO.setPersonName(appPerson.getPersonName());
+            appPersonWxVisitVO.setMobile(appPerson.getMobile());
+            appPersonWxVisitVO.setIdNum(appPerson.getIdNum());
+        }
+        LambdaQueryWrapper<AppPersonWxVisit> queryWrapper=new LambdaQueryWrapper<AppPersonWxVisit> ().eq (AppPersonWxVisit :: getPersonId,appPerson.getPersonId()).orderByDesc(AppPersonWxVisit::getCreateTime);
+        List<AppPersonWxVisit> appPersonWxVisits = appPersonWxVisitService.getBaseMapper ().selectList (queryWrapper);
+        AppPersonWxVisit appPersonWxVisit = appPersonWxVisits.stream().findFirst().orElse(null);
+        if (ObjectUtil.isNotNull(appPersonWxVisit)) {
+            BeanUtils.copyProperties(appPersonWxVisit,appPersonWxVisitVO);
+            return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, appPersonWxVisitVO);
+        }
+        return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, null);
+    }
 }

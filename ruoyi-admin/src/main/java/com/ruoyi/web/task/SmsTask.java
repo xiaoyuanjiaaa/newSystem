@@ -64,29 +64,25 @@ public class SmsTask {
                 if (CollectionUtils.isEmpty(smsConfigList)) {
             return;
         }
+        Boolean is=false;
         for (AppSmsConfig appSmsConfig : smsConfigList) {
+            if(appSmsConfig.getReminder()==1){
+                is=true;
+            }
             now.setHours(appSmsConfig.getSmsTime().getHours());
             now.setMinutes(appSmsConfig.getSmsTime().getMinutes());
             if (now.equals(now_copy)) {
                 switch (appSmsConfig.getReminder()) {
                     case 1:
-                        mobile = smsConfigService.getSelfPhone();
+                        smsConfigService.sendSelfPhone();
                         break;
                     case 2:
-                        mobile = smsConfigService.getLeaderPhone();
+                        smsConfigService.sendLeaderPhone(is);
                         break;
                     case 3:
-                        mobile = smsConfigService.getAppointPhone(appSmsConfig.getAppointUser());
+                        smsConfigService.sendFillPhone(appSmsConfig.getAppointUser(),is);
                         break;
                 }
-                //发送短信
-                ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
-                zhSmsDTO.setExt(ext);
-                zhSmsDTO.setMessage(message);
-                zhSmsDTO.setMobile(mobile);
-                zhSmsDTO.setUid(uId);
-                zhSmsDTO.setUserpwd(userPwd);
-                smsConfigService.noticeReportBySms(zhSmsDTO);
             }
         }
     }

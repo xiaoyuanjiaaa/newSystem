@@ -32,10 +32,12 @@ public interface IAppSmsConfigService extends IService<AppSmsConfig> {
     //短信提醒列表
     TableDataInfo smsConfigList(PageDomain domain);
     //获取手机号（发送给本人）
-    String getSelfPhone();
+    void sendSelfPhone();
     //获取手机号（发送给部门负责）
-    String getLeaderPhone();
+    void sendLeaderPhone(Boolean is);
+    //填报提醒获取手机号（发送给指定人员）
+    void sendFillPhone(String appointUser,Boolean is);
 
-    //获取手机号（发送给指定人员）
-    String getAppointPhone(String appointUser);
+    //异常提醒获取手机号（发送给指定人员）
+    String getAppointPhone(String appointUser,Boolean is);
 }

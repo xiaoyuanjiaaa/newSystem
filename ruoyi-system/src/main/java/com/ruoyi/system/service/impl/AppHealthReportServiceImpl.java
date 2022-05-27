@@ -17,6 +17,7 @@ import com.google.gson.reflect.TypeToken;
 import com.ruoyi.common.core.domain.entity.*;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.enums.DutyStatusEnums;
+import com.ruoyi.common.enums.RemindObjectEnums;
 import com.ruoyi.common.enums.RemindTypeEnums;
 import com.ruoyi.common.exception.CustomException;
 import com.ruoyi.system.dto.*;
@@ -356,7 +357,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                     }.getType());
                         log.info("*******************" + list);
                         for (Option option : list) {
-                            if (option.getDetailId() == 56) {
+                            if (option.getDetailId() == 21) {
                                 log.info("=========" + option.getValue());
                                 Object value = option.getValue();
                                 if (value instanceof Double) {
@@ -380,7 +381,6 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                                 if(ObjectUtil.isNotNull(selectOptions.getExceptionStatus())){
                                     if(value instanceof Double){
                                         if (selectOptions.getValue() == Integer.valueOf(((Double) value).intValue()) && selectOptions.getExceptionStatus()) {
-                                            log.info("111111111111111111111111111111111");
                                             this.sendException();
                                             break out;
                                         }
@@ -388,7 +388,6 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                                         String[] values = value.toString().split(",");
                                         for(String str:values){
                                             if (selectOptions.getValue() == Integer.parseInt(str) && selectOptions.getExceptionStatus()) {
-                                                log.info("8888888888888888888888888888");
                                                 this.sendException();
                                                 break out;
                                             }
@@ -1136,6 +1135,11 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
         queryWrapper.eq("is_enabled", 0);
         queryWrapper.eq("type", RemindTypeEnums.EXCEPTION_REMIND.getCode());
         List<AppSmsConfig> smsConfigList = smsConfigService.list(queryWrapper);
+        List<Integer> list=smsConfigList.stream().map(AppSmsConfig::getReminder).collect(Collectors.toList());
+        Boolean is=false;
+        if(list.size()>0){
+            is=list.contains(RemindObjectEnums.YOURSELF.getCode());
+        }
         if (ObjectUtil.isNotEmpty(smsConfigList)) {
             String mobile = "";
             for (AppSmsConfig appSmsConfig : smsConfigList) {
@@ -1145,13 +1149,16 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                         message = "【无锡二院】您的填报有异常";
                         break;
                     case 2:
-                        SysDept sysDept = deptService.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptId, SecurityUtils.getDeptId()));
-                        message = "【无锡二院】"+SecurityUtils.getLoginUser().getUser().getNickName()+"的填报有异常";
-                        mobile = sysDept.getPhone();
-                        break;
+                        if(!is){
+                            SysDept sysDept = deptService.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptId, SecurityUtils.getDeptId()));
+                            message = "【无锡二院】"+SecurityUtils.getLoginUser().getUser().getNickName()+"的填报有异常";
+                            mobile = sysDept.getPhone();
+                            break;
+                        }
+                        continue;
                     case 3:
-                        mobile = smsConfigService.getAppointPhone(appSmsConfig.getAppointUser());
-                        message = "【无锡二院】"+SecurityUtils.getLoginUser().getUser().getNickName()+"的填报有异常";
+                        message = "【无锡二院】" + SecurityUtils.getLoginUser().getUser().getNickName() + "的填报有异常";
+                        mobile = smsConfigService.getAppointPhone(appSmsConfig.getAppointUser(),is);
                         break;
                 }
                 //发送短信

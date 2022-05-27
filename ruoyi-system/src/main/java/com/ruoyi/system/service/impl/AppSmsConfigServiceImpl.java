@@ -23,6 +23,7 @@ import com.ruoyi.common.enums.SuccessEnums;
 import com.ruoyi.common.exception.CustomException;
 import com.ruoyi.common.exception.job.TaskException;
 import com.ruoyi.common.utils.CheckUtil;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.statics.ConstantDic;
 import com.ruoyi.system.dto.AppHealthReportCountDTO;
@@ -92,6 +93,13 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
 
    @Value("${smsZh.sms.userPwd}")
    private String userPwd;
+
+   @Value("${smsZh.sms.ext}")
+   private String ext;
+
+   @Value("${smsZh.sms.message}")
+   private String selfMessage;
+
 
    private String message="【无锡二院】您的验证码：";
 
@@ -227,14 +235,12 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
    }
 
    @Override
-   public String getSelfPhone() {
+   public void sendSelfPhone() {
       AppHealthReportCountDTO appHealthReportCountDTO = new AppHealthReportCountDTO();
       appHealthReportCountDTO.setCurrentDay(LocalDate.now());
       appHealthReportCountDTO.setPageSize(10000);
       PageInfo<SysUser> userPageInfo =  healthReportService.pageSysUser(appHealthReportCountDTO);
-      if (CollectionUtils.isEmpty(userPageInfo.getList())){
-         return null;
-      }
+      if (CollectionUtils.isNotEmpty(userPageInfo.getList())){
       StringBuffer mobile = new StringBuffer();
       for (SysUser sysUser : userPageInfo.getList()) {
          if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(sysUser.getPhonenumber())){
@@ -243,38 +249,57 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
          }
       }
       mobile.deleteCharAt(mobile.length()-1);
-
       log.info("手机号：++++++++++++++"+mobile);
-      return mobile.toString();
+         //发送短信
+         ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
+         zhSmsDTO.setExt(ext);
+         zhSmsDTO.setMessage(selfMessage);
+         zhSmsDTO.setMobile(mobile.toString());
+         zhSmsDTO.setUid(uId);
+         zhSmsDTO.setUserpwd(userPwd);
+         appSmsConfigService.noticeReportBySms(zhSmsDTO);
+      }
    }
 
    @Override
-   public String getLeaderPhone() {
+   public void sendLeaderPhone(Boolean is) {
       AppHealthReportCountDTO appHealthReportCountDTO = new AppHealthReportCountDTO();
       appHealthReportCountDTO.setCurrentDay(LocalDate.now());
       appHealthReportCountDTO.setPageSize(10000);
       PageInfo<SysUser> userPageInfo =  healthReportService.pageSysUser(appHealthReportCountDTO);
-      List<SysDept> list=sysDeptService.list(new QueryWrapper<>());
-      if(ObjectUtil.isNull(list)){
-         return null;
+      if(ObjectUtil.isNotEmpty(userPageInfo.getList())) {
+         Map<Long, List<String>> map = userPageInfo.getList().stream().collect(Collectors.groupingBy(SysUser::getDeptId, Collectors.mapping(SysUser::getNickName, Collectors.toList())));
+
+         List<Long> deptIds = userPageInfo.getList().stream().map(SysUser::getDeptId).distinct().collect(Collectors.toList());
+         List<SysDept> deptList = sysDeptService.list(new LambdaQueryWrapper<SysDept>().in(SysDept::getDeptId, deptIds));
+         for (SysDept dept : deptList) {
+           List<String> list= map.get(dept.getDeptId());
+           if(is&&ObjectUtil.isNotEmpty(list)&&list.contains(dept.getLeader())){
+              list.remove(dept.getLeader());
+           }
+            String str=StringUtils.join(list, ",");
+           String message="【无锡二院】"+str+"今日的健康信息还未上报，请及时填写";
+            log.info("短信内容：++++++++++++++"+message);
+            log.info("手机号：++++++++++++++"+dept.getPhone());
+            //发送短信
+            ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
+            zhSmsDTO.setExt(ext);
+            zhSmsDTO.setMessage(message);
+            zhSmsDTO.setMobile(dept.getPhone());
+            zhSmsDTO.setUid(uId);
+            zhSmsDTO.setUserpwd(userPwd);
+            appSmsConfigService.noticeReportBySms(zhSmsDTO);
+         }
       }
-      List<Long> deptIds=userPageInfo.getList().stream().map(SysUser::getDeptId).distinct().collect(Collectors.toList());
-      List<SysDept> deptList=sysDeptService.list(new LambdaQueryWrapper<SysDept>().in(SysDept::getDeptId,deptIds));
-      StringBuffer mobile = new StringBuffer();
-      for (SysDept dept : deptList) {
-            mobile.append(dept.getPhone());
-            mobile.append(",");
-      }
-      mobile.deleteCharAt(mobile.length()-1);
-      return mobile.toString();
    }
 
    @Override
-   public String getAppointPhone(String appointUser) {
+   public String getAppointPhone(String appointUser,Boolean is) {
       if(ObjectUtil.isNull(appointUser)){
          return null;
       }
       Map<String, String> map = JSONObject.parseObject(appointUser, new TypeReference<Map<String, String>>() {});
+      if(is){map.keySet().removeIf(key -> key.equals(SecurityUtils.getUsername()));}
       StringBuffer mobile = new StringBuffer();
       for (Map.Entry<String, String> entry : map.entrySet()) {
          mobile.append(entry.getValue());
@@ -283,5 +308,40 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
       mobile.deleteCharAt(mobile.length()-1);
       log.info("手机号：++++++++++++++"+mobile);
       return mobile.toString();
+   }
+
+   @Override
+   public void sendFillPhone(String appointUser, Boolean is) {
+      if (ObjectUtil.isNotNull(appointUser)){
+         AppHealthReportCountDTO appHealthReportCountDTO = new AppHealthReportCountDTO();
+         appHealthReportCountDTO.setCurrentDay(LocalDate.now());
+         appHealthReportCountDTO.setPageSize(10000);
+         PageInfo<SysUser> userPageInfo =  healthReportService.pageSysUser(appHealthReportCountDTO);
+         log.info("未填报列表：++++++++++++++"+userPageInfo.getList());
+         String str="";
+         if(ObjectUtil.isNotEmpty(userPageInfo.getList())){
+            List<String> nameList=userPageInfo.getList().stream().map(SysUser::getNickName).collect(Collectors.toList());
+            str = StringUtils.join(nameList, ",");
+         }
+         Map<String, String> map = JSONObject.parseObject(appointUser, new TypeReference<Map<String, String>>() {
+         });
+         if (is) {
+            map.keySet().removeIf(key -> key.equals(SecurityUtils.getUsername()));
+         }
+         for (Map.Entry<String, String> entry : map.entrySet()) {
+            String message="【无锡二院】"+str+"今日的健康信息还未上报，请及时填写";
+            log.info("短信内容：++++++++++++++"+message);
+            //发送短信
+            ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
+            zhSmsDTO.setExt(ext);
+            zhSmsDTO.setMessage(message);
+            zhSmsDTO.setMobile(entry.getValue());
+            zhSmsDTO.setUid(uId);
+            zhSmsDTO.setUserpwd(userPwd);
+            log.info("发送短信参数：++++++++++++++"+zhSmsDTO.toString());
+            appSmsConfigService.noticeReportBySms(zhSmsDTO);
+         }
+
+      }
    }
 }
