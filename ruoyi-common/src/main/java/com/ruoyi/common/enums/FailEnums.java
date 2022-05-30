@@ -60,7 +60,8 @@ public enum FailEnums {
 
     REFUSE_UPDATE(500,"审核当中无法申请"),
     DEPT_NOT_EXIST(500,"该片区不存在"),
-    LEADER_NOT_OPTION(500,"负责人无法申请");
+    LEADER_NOT_OPTION(500,"负责人无法申请"),
+    NOT_RESET_PASWORD(500,"无法重置管理员的密码");
 
     private int code;
     private String msg;

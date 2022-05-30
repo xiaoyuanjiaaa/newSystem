@@ -492,8 +492,8 @@ public class SysUserController extends BaseController {
      */
     @PreAuthorize("@ss.hasPermi('system:user:resetPwds')")
     @Log(title = "用户管理", businessType = BusinessType.UPDATE)
-    @PutMapping("/resetPwds")
-    public ResultVO resetPwds(String userIds) {
+    @GetMapping("/resetPwds")
+    public ResultVO resetPwds(@RequestParam String userIds) {
         //判断是否为admin
 //        boolean admin = SecurityUtils.getLoginUser().getUser().isAdmin();
 //        if(!admin){
@@ -501,7 +501,7 @@ public class SysUserController extends BaseController {
 //        }
         List<String> ids=Arrays.asList(userIds.split(","));
         if(ids.contains("1")){
-            ids.remove("1");
+            return new ResultVO<>(FailEnums.NOT_RESET_PASWORD);
         }
         for(String str:ids){
             SysUser user = new SysUser();
