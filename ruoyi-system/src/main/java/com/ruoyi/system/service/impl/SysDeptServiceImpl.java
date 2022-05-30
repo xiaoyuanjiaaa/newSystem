@@ -215,7 +215,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper,SysDept> imple
         SysDept deptInfo = this.getOne(new QueryWrapper<SysDept>().eq("dept_id",dept.getDeptId()));
         if (deptInfo != null)
         {
-            throw new CustomException("部门已存在，不允许新增");
+            throw new CustomException("部门id已存在，不允许新增");
         }
         dept.setLevel(String.valueOf(Integer.parseInt(info.getLevel())+1));
         dept.setAncestors(info.getAncestors() + "," + dept.getParentId());
