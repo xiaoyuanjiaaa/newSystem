@@ -68,6 +68,17 @@ public class SysLoginService
         {
             validateCaptcha(username, code, uuid);
         }
+        //判断是否存在用户
+        LoginUser loginUser = userService.selectUserForLogin(username, null);
+        if(loginUser==null || loginUser.getUser() == null){
+            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, "查询不到该用户,登录失败"));
+            throw new CustomException("查询不到该用户,登录失败");
+        }
+        //判断用户是否被封禁
+        if("1".equals(loginUser.getUser().getStatus())){
+            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username,Constants.LOGIN_FAIL,"该用户已被封禁，请联系管理员处理！！！"));
+            throw new CustomException("该用户已被封禁，请联系管理员处理！！！");
+        }
         // 用户验证
         Authentication authentication = null;
         try
@@ -90,9 +101,9 @@ public class SysLoginService
             }
         }
         AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success")));
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+        LoginUser loginUser1 = (LoginUser) authentication.getPrincipal();
         if (loginUser.getUser() != null && loginUser.getUser().getRoles() == null){
-            loginUser.getUser().setRoles(sysRoleMapper.selectRolePermissionByUserId(loginUser.getUserId()));
+            loginUser.getUser().setRoles(sysRoleMapper.selectRolePermissionByUserId(loginUser1.getUserId()));
         }
         recordLoginInfo(loginUser.getUser());
         // 生成token

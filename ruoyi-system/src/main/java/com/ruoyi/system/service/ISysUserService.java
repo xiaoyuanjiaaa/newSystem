@@ -61,6 +61,14 @@ public interface ISysUserService extends IService<SysUser>
      * @return
      */
     public LoginUser selectUserForPda(String userName, String phone, String jobNumber);
+
+    /**
+     * pda查询用户信息
+     * @param username
+     * @param password
+     * @return
+     */
+    public LoginUser selectUserForLogin(String username, String password);
     /**
      * 通过jobNumber查询用户信息
      * @param jobNumber

@@ -174,6 +174,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		</if>
 	</select>
 
+	<select id="selectUserForLogin" resultMap="SysUserResult">
+		<include refid="selectUserVo"/>
+		where 1=1
+		<if test="username!=null">
+			and u.phonenumber = #{username}
+		</if>
+		<if test="password!=null">
+			and u.password = #{password}
+		</if>
+	</select>
+
 
 	<select id="selectUserById" parameterType="Long" resultMap="SysUserResult">
 		<include refid="selectUserVo"/>

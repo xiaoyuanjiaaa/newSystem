@@ -165,6 +165,22 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper,SysUser> imple
         return createLoginUser(sysUser);
     }
 
+    /**
+     * login查询用户信息
+     * @param username
+     * @param password
+     * @return
+     */
+    @Override
+    public LoginUser selectUserForLogin(String username, String password)
+    {
+        SysUser sysUser = userMapper.selectUserForLogin(username,password);
+        if(sysUser==null){
+            throw new CustomException("查询不到该用户,登录失败");
+        }
+        return createLoginUser(sysUser);
+    }
+
     @Override
     public SysUser selectUserByJonNumber(String jobNumber) {
         QueryWrapper<SysUser> queryWrapper = new QueryWrapper();

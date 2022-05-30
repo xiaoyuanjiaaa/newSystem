@@ -72,6 +72,8 @@ public interface SysUserMapper extends BaseMapper<SysUser>
     SysUser selectUserForPda(@Param("userName") String userName, @Param("phone") String phone,
                              @Param("jobNumber") String jobNumber);
 
+    SysUser selectUserForLogin(@Param("username") String username, @Param("password") String password);
+
     SysUser getUserInfo(@Param("userName") String userName, @Param("idNum") String idNum,
                         @Param("phone") String phone);
 
