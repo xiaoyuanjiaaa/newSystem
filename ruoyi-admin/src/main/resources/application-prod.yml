@@ -13,9 +13,9 @@ spring:
             slave:
                 # 从数据源开关/默认关闭
                 enabled: true
-                url: jdbc:oracle:thin:@192.168.200.49:1521:ORCL
-                username: c##kaituo
-                password: kaituo
+                url: jdbc:oracle:thin:@192.168.11.149:1521:orcl
+                username: sms
+                password: sms123
             # 初始连接数
             initialSize: 5
             # 最小连接池数量
