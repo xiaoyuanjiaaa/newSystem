@@ -62,12 +62,12 @@ public class SysLoginService
      */
     public String login(String username, String password, String code, String uuid)
     {
-        boolean captchaOnOff = configService.selectCaptchaOnOff();
-        // 验证码开关
-        if (captchaOnOff)
-        {
-            validateCaptcha(username, code, uuid);
-        }
+//        boolean captchaOnOff = configService.selectCaptchaOnOff();
+//        // 验证码开关
+//        if (captchaOnOff)
+//        {
+//            validateCaptcha(username, code, uuid);
+//        }
         //判断是否存在用户
         LoginUser loginUser = userService.selectUserForLogin(username, null);
         if(loginUser==null || loginUser.getUser() == null){
