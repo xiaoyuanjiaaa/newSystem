@@ -23,10 +23,12 @@ import com.ruoyi.common.enums.SuccessEnums;
 import com.ruoyi.common.exception.CustomException;
 import com.ruoyi.common.exception.job.TaskException;
 import com.ruoyi.common.utils.CheckUtil;
+import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.statics.ConstantDic;
 import com.ruoyi.system.dto.AppHealthReportCountDTO;
+import com.ruoyi.system.dto.SmsOracleConfigDTO;
 import com.ruoyi.system.dto.ZhSmsDTO;
 import com.ruoyi.system.entity.AppSmsConfig;
 import com.ruoyi.system.entity.AppSmsSendLog;
@@ -49,6 +51,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -85,6 +89,8 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
    private ISysDeptService sysDeptService;
    @Autowired
    private IAppHealthReportService healthReportService;
+   @Autowired
+   private ISysConfigService sysConfigService;
    @Value("${smsZh.sms.url}")
    private String sendMessageUrl;
 
@@ -250,14 +256,17 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
       }
       mobile.deleteCharAt(mobile.length()-1);
       log.info("手机号：++++++++++++++"+mobile);
+      log.info("短信内容：++++++++++++++"+selfMessage);
          //发送短信
-         ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
-         zhSmsDTO.setExt(ext);
-         zhSmsDTO.setMessage(selfMessage);
-         zhSmsDTO.setMobile(mobile.toString());
-         zhSmsDTO.setUid(uId);
-         zhSmsDTO.setUserpwd(userPwd);
-         appSmsConfigService.noticeReportBySms(zhSmsDTO);
+         SmsOracleConfigDTO dto = new SmsOracleConfigDTO();
+         dto.setCreateDate(new Timestamp(DateUtils.getCurrentTimeStamp()));
+         dto.setMobile(mobile.toString());
+         dto.setMessage(selfMessage);
+         log.info("发送短信参数：++++++++++++++"+dto.toString());
+         //发送oracle
+         sysConfigService.insertSms(dto);
+         //发送短信日志
+         appSmsConfigService.sendSmsLog(dto.getMessage(),dto.getMobile());
       }
    }
 
@@ -282,13 +291,13 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
             log.info("短信内容：++++++++++++++"+message);
             log.info("手机号：++++++++++++++"+dept.getPhone());
             //发送短信
-            ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
-            zhSmsDTO.setExt(ext);
-            zhSmsDTO.setMessage(message);
-            zhSmsDTO.setMobile(dept.getPhone());
-            zhSmsDTO.setUid(uId);
-            zhSmsDTO.setUserpwd(userPwd);
-            appSmsConfigService.noticeReportBySms(zhSmsDTO);
+            SmsOracleConfigDTO dto = new SmsOracleConfigDTO();
+            dto.setCreateDate(new Timestamp(DateUtils.getCurrentTimeStamp()));
+            dto.setMobile(dept.getPhone());
+            dto.setMessage(message);
+            log.info("发送短信参数：++++++++++++++"+dto.toString());
+            sysConfigService.insertSms(dto);
+            appSmsConfigService.sendSmsLog(dto.getMessage(),dto.getMobile());
          }
       }
    }
@@ -319,29 +328,45 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
          PageInfo<SysUser> userPageInfo =  healthReportService.pageSysUser(appHealthReportCountDTO);
          log.info("未填报列表：++++++++++++++"+userPageInfo.getList());
          String str="";
-         if(ObjectUtil.isNotEmpty(userPageInfo.getList())){
-            List<String> nameList=userPageInfo.getList().stream().map(SysUser::getNickName).collect(Collectors.toList());
-            str = StringUtils.join(nameList, ",");
-         }
          Map<String, String> map = JSONObject.parseObject(appointUser, new TypeReference<Map<String, String>>() {
          });
-         if (is) {
-            map.keySet().removeIf(key -> key.equals(SecurityUtils.getUsername()));
+         //如果有本人发送  指定人员发送需要删除本人
+         if(ObjectUtil.isNotEmpty(userPageInfo.getList())){
+            List<String> nameList=userPageInfo.getList().stream().map(SysUser::getNickName).collect(Collectors.toList());
+            if (is) {
+               for(String name:nameList){
+                  for (Map.Entry<String, String> element : map.entrySet()) {
+                     if(name.equals(element.getValue())){
+                        map.remove(element.getKey());
+                     }
+                  }
+               }
+            }
+            str = StringUtils.join(nameList, ",");
          }
          for (Map.Entry<String, String> entry : map.entrySet()) {
             String message="【无锡二院】"+str+"今日的健康信息还未上报，请及时填写";
             log.info("短信内容：++++++++++++++"+message);
             //发送短信
-            ZhSmsDTO zhSmsDTO = new ZhSmsDTO();
-            zhSmsDTO.setExt(ext);
-            zhSmsDTO.setMessage(message);
-            zhSmsDTO.setMobile(entry.getValue());
-            zhSmsDTO.setUid(uId);
-            zhSmsDTO.setUserpwd(userPwd);
-            log.info("发送短信参数：++++++++++++++"+zhSmsDTO.toString());
-            appSmsConfigService.noticeReportBySms(zhSmsDTO);
+            SmsOracleConfigDTO dto = new SmsOracleConfigDTO();
+            dto.setCreateDate(new Timestamp(DateUtils.getCurrentTimeStamp()));
+            dto.setMobile(entry.getValue());
+            dto.setMessage(message);
+            log.info("发送短信参数：++++++++++++++"+dto.toString());
+            sysConfigService.insertSms(dto);
+            //写入短信日志
+            appSmsConfigService.sendSmsLog(dto.getMessage(),dto.getMobile());
          }
 
       }
+   }
+
+   @Override
+   public void sendSmsLog(String message,String mobile) {
+      AppSmsSendLog appSmsSendLog=new AppSmsSendLog();
+      appSmsSendLog.setSmsContent(message);
+      appSmsSendLog.setSmsMobile(mobile);
+      appSmsSendLog.setSmsTime(new Date(System.currentTimeMillis()));
+      smsSendLogService.save(appSmsSendLog);
    }
 }

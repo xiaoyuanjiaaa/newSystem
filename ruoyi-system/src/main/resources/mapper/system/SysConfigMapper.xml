@@ -112,4 +112,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="sysConfigName" resultType="com.ruoyi.system.entity.NameConfig">
       select * from sys_name_config
     </select>
+    <insert id="insertSmsConfig" parameterType="com.ruoyi.system.dto.SmsOracleConfigDTO">
+        insert into SMS_SENT_INFO (
+        <if test="usemod != null and usemod != '' ">USEMOD,</if>
+        <if test="mobile != null and mobile != '' ">MOBILE,</if>
+        <if test="message != null and message != '' ">MESSAGE,</if>
+        <if test="operid != null and operid != '' ">OPERID,</if>
+        <if test="createDate != null">CREATE_DATE</if>
+        )values(
+        <if test="usemod != null and usemod != ''">#{usemod},</if>
+        <if test="mobile != null and mobile != ''">#{mobile},</if>
+        <if test="message != null and message != ''">#{message},</if>
+        <if test="operid != null and operid != ''">#{operid},</if>
+        <if test="createDate != null">#{createDate}</if>
+        )
+    </insert>
 </mapper>

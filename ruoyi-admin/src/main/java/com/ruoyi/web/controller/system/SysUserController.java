@@ -493,7 +493,7 @@ public class SysUserController extends BaseController {
      */
 //    @PreAuthorize("@ss.hasPermi('system:user:resetPwds')")
     @Log(title = "用户管理", businessType = BusinessType.UPDATE)
-    @GetMapping("/resetPwds")
+    @PutMapping ("/resetPwds")
     public ResultVO resetPwds(@RequestParam String userIds) {
         //判断是否为admin
 //        boolean admin = SecurityUtils.getLoginUser().getUser().isAdmin();

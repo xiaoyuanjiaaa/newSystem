@@ -1,7 +1,6 @@
 spring:
     datasource:
         type: com.alibaba.druid.pool.DruidDataSource
-        driverClassName: com.mysql.cj.jdbc.Driver
         druid:
             # 主库数据源
             master:
@@ -11,10 +10,10 @@ spring:
             # 从库数据源
             slave:
                 # 从数据源开关/默认关闭
-                enabled: false
-                url:
-                username:
-                password:
+                enabled: true
+                url: jdbc:oracle:thin:@192.168.200.49:1521:ORCL
+                username: c##kaituo
+                password: kaituo
             # 初始连接数
             initialSize: 5
             # 最小连接池数量f

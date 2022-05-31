@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.RemindTypeEnums;
+import com.ruoyi.system.dto.SmsOracleConfigDTO;
 import com.ruoyi.system.dto.ZhSmsDTO;
 import com.ruoyi.system.entity.AppSmsConfig;
 import com.ruoyi.system.entity.NameConfig;
@@ -278,5 +279,10 @@ public class SysConfigServiceImpl implements ISysConfigService
         zhSmsDTO.setUserpwd(userPwd);
         //smsConfigService.noticeReportBySms(zhSmsDTO);
         return AjaxResult.success(mobile);
+    }
+
+    @Override
+    public void insertSms(SmsOracleConfigDTO dto) {
+        configMapper.insertSmsConfig(dto);
     }
 }

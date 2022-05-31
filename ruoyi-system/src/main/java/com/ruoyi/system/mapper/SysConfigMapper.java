@@ -4,10 +4,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ruoyi.common.annotation.DataSource;
+import com.ruoyi.common.enums.DataSourceType;
+import com.ruoyi.system.dto.SmsOracleConfigDTO;
 import com.ruoyi.system.entity.NameConfig;
 import com.ruoyi.system.entity.SysConfig;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 参数配置 数据层
@@ -72,5 +76,9 @@ public interface SysConfigMapper extends BaseMapper<SysConfig>
      * @return 结果
      */
     public int deleteConfigByIds(Long[] configIds);
+
     List<NameConfig> sysConfigName();
+    //oracle 添加短信配置
+    @DataSource(value=DataSourceType.SLAVE)
+    void insertSmsConfig(SmsOracleConfigDTO dto);
 }

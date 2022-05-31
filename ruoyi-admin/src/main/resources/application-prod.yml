@@ -12,10 +12,10 @@ spring:
             # 从库数据源
             slave:
                 # 从数据源开关/默认关闭
-                enabled: false
-                url:
-                username:
-                password:
+                enabled: true
+                url: jdbc:oracle:thin:@192.168.200.49:1521:ORCL
+                username: c##kaituo
+                password: kaituo
             # 初始连接数
             initialSize: 5
             # 最小连接池数量
@@ -118,7 +118,7 @@ wx:
 
 smsZh:
     sms:
-        url: http://sms.zh-ink.com/api/sms/send
+        url: http://172.17.2.25:8020/api/sms/send
         uid: wuxieryuan
         userPwd: 8c80949df74df064be5a5773c5344825
         message: 【无锡二院】您今日的健康信息还未上报，请及时填写
