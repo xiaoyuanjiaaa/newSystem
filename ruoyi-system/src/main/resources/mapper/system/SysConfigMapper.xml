@@ -113,7 +113,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
       select * from sys_name_config
     </select>
     <insert id="insertSmsConfig" parameterType="com.ruoyi.system.dto.SmsOracleConfigDTO">
-        insert into "sms_sent_info" (
+        insert into SMS_SENT_INFO (
         <if test="usemod != null and usemod != '' ">USEMOD,</if>
         <if test="mobile != null and mobile != '' ">MOBILE,</if>
         <if test="message != null and message != '' ">MESSAGE,</if>

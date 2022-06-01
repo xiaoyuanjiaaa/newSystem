@@ -183,6 +183,10 @@ public class SysDeptController extends BaseController
         {
             return AjaxResult.error("该部门包含未停用的子部门！");
         }
+        if(ObjectUtil.isNull(dept.getLeader())||ObjectUtil.isNull(dept.getPhone())){
+            dept.setUpdateBy(getUsername());
+            return toAjax(deptService.updateDept(dept));
+        }
         //修改部门负责人后，需要修改当日每日填报的数据-部门名称
         SysDept sysDept = deptService.getOne(new QueryWrapper<SysDept>().eq("dept_id",dept.getDeptId()));
         String oldDeptName = sysDept.getDeptName();

@@ -10,7 +10,7 @@ spring:
             # 从库数据源
             slave:
                 # 从数据源开关/默认关闭
-                enabled: true
+                enabled: false
                 url: jdbc:oracle:thin:@192.168.200.49:1521:ORCL
                 username: c##kaituo
                 password: kaituo

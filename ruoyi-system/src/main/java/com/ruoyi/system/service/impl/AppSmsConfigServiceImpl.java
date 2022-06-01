@@ -237,7 +237,7 @@ public class AppSmsConfigServiceImpl extends ServiceImpl<AppSmsConfigMapper, App
          }
          return new TableDataInfo(list,(int)page.getTotal());
       }
-      return null;
+      return new TableDataInfo(null,0);
    }
 
    @Override

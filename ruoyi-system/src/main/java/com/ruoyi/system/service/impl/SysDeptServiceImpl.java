@@ -367,11 +367,13 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper,SysDept> imple
     public Boolean updateDeptAdmin(SysDept dept) {
         //先删除旧部门负责人的角色权限
         SysDept oldSysDept=this.selectDeptById(dept.getDeptId());
-        SysUser sysUser=sysUserService.getBaseMapper().selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getPersonId,oldSysDept.getLeaderId()));
-        SysUserRole oldSysUserRole=new SysUserRole();
-        oldSysUserRole.setUserId(sysUser.getUserId());
-        oldSysUserRole.setRoleId(RoleEnum.DEPT_ADMIN.getRoleId().longValue());
-        userRoleMapper.deleteUserRoleInfo(oldSysUserRole);
+        if(ObjectUtil.isNotNull(oldSysDept.getLeader())){
+            SysUser sysUser=sysUserService.getBaseMapper().selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getPersonId,oldSysDept.getLeaderId()));
+            SysUserRole oldSysUserRole=new SysUserRole();
+            oldSysUserRole.setUserId(sysUser.getUserId());
+            oldSysUserRole.setRoleId(RoleEnum.DEPT_ADMIN.getRoleId().longValue());
+            userRoleMapper.deleteUserRoleInfo(oldSysUserRole);
+        }
         //再新增新部门负责人的权限
         SysUser newSysUser = sysUserService.selectUserByUserPhone(dept.getPhone());
         List<SysUserRole> sysUserRoleList=new ArrayList<>();
