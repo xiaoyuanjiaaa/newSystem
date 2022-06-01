@@ -7,6 +7,7 @@ import com.ruoyi.common.core.page.PageDomain;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.system.dto.ZhSmsDTO;
 import com.ruoyi.system.entity.AppSmsConfig;
+import com.ruoyi.system.entity.AppSmsSendLog;
 import com.ruoyi.system.vo.SmsConfigListVO;
 
 import java.util.List;
@@ -40,4 +41,6 @@ public interface IAppSmsConfigService extends IService<AppSmsConfig> {
 
     //异常提醒获取手机号（发送给指定人员）
     String getAppointPhone(String appointUser,Boolean is);
+    void sendSmsLog(String message,String mobile);
+
 }

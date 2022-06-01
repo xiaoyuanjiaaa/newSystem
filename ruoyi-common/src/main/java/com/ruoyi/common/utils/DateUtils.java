@@ -226,4 +226,16 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
         String timestamp = String.valueOf(date.getTime()/1000);
         return Integer.valueOf(timestamp);
     }
+//获取当前时间戳
+    public static long getCurrentTimeStamp(){
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String date=format.format(new Date());
+        Date newDate=new Date();
+        try {
+            newDate=format.parse(date);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        return newDate.getTime();
+    }
 }

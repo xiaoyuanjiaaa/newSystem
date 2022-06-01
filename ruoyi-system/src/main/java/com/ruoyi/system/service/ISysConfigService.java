@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.system.dto.SmsOracleConfigDTO;
 import com.ruoyi.system.entity.SysConfig;
 
 /**
@@ -94,4 +95,6 @@ public interface ISysConfigService
     Map<String,String> sysConfigName();
     //定时任务发送短信测试
     AjaxResult sendPhone();
+    //oracle添加短信配置
+    void insertSms(SmsOracleConfigDTO dto);
 }

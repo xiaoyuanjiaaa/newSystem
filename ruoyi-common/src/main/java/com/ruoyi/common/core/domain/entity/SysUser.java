@@ -9,6 +9,7 @@ import javax.validation.constraints.Size;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
@@ -29,6 +30,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
  * @author ruoyi
  */
 @ApiModel("用户")
+@TableName("sys_user")
 public class SysUser extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
@@ -36,6 +38,7 @@ public class SysUser extends BaseEntity {
      * 用户ID
      */
     @ApiModelProperty("人员ID")
+    @TableId
     private Long userId;
 
     /**

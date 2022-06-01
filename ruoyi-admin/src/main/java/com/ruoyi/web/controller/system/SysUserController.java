@@ -488,11 +488,12 @@ public class SysUserController extends BaseController {
     }
     /**
      * 批量重置密码
+     * 不可重置admin的密码
      * @data 2022.5.26
      */
-    @PreAuthorize("@ss.hasPermi('system:user:resetPwds')")
+//    @PreAuthorize("@ss.hasPermi('system:user:resetPwds')")
     @Log(title = "用户管理", businessType = BusinessType.UPDATE)
-    @GetMapping("/resetPwds")
+    @PutMapping ("/resetPwds")
     public ResultVO resetPwds(@RequestParam String userIds) {
         //判断是否为admin
 //        boolean admin = SecurityUtils.getLoginUser().getUser().isAdmin();
