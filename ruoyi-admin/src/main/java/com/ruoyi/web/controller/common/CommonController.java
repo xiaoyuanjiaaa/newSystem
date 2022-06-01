@@ -7,6 +7,7 @@ import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +35,11 @@ public class CommonController
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Value("${spring.profiles.active}")
+    private String env;
+    @Value("${prodUrl}")
+    private String prodUrl;
 
     /**
      * 通用下载请求
@@ -88,7 +94,13 @@ public class CommonController
             log.info("开始------------------");
             String fileName = FileUploadUtils.upload(filePath, file);
             log.info("结束------------------");
-            String url = serverConfig.getUrl() + fileName;
+            String url="";
+            if(env.equals("prod")){
+                url=prodUrl + fileName;
+            }else {
+                url= serverConfig.getUrl() + fileName;
+            }
+
             AjaxResult ajax = AjaxResult.success();
             ajax.put("fileName", fileName);
 //            ajax.put("url", "http://b.hiphotos.baidu.com/image/pic/item/9d82d158ccbf6c81b94575cfb93eb13533fa40a2.jpg");

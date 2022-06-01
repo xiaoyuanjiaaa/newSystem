@@ -131,3 +131,5 @@ ureport.mysql.provider:
 logoUrl : /opt/yqfk/image/logo.png
 
 uploadUrl: /opt/yqfk/upload/excel/
+
+prodUrl: https://yqfk.wx2h.com
