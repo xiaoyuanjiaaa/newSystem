@@ -162,9 +162,11 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
             sysUser.setDeptId(reportDTO.getDeptId());
             List<SysUser> sysUsers = userService.selectUserList(sysUser);
             if (CollectionUtils.isNotEmpty(sysUsers)) {
-                queryWrapper.eq("1", "2");
-            } else {
+//                queryWrapper.eq("1", "2");
                 queryWrapper.in("app_health_report.person_id", sysUsers.stream().map(SysUser::getPersonId).collect(Collectors.toList()));
+            } else {
+//                queryWrapper.in("app_health_report.person_id", sysUsers.stream().map(SysUser::getPersonId).collect(Collectors.toList()));
+                queryWrapper.eq("1", "2");
             }
         }
         if (reportDTO.getOnDuty() != null) {
