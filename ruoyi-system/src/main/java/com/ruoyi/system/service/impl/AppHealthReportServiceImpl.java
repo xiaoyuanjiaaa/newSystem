@@ -166,7 +166,7 @@ public class AppHealthReportServiceImpl extends ServiceImpl<AppHealthReportMappe
                 queryWrapper.in("app_health_report.person_id", sysUsers.stream().map(SysUser::getPersonId).collect(Collectors.toList()));
             } else {
 //                queryWrapper.in("app_health_report.person_id", sysUsers.stream().map(SysUser::getPersonId).collect(Collectors.toList()));
-                queryWrapper.eq("1", "2");
+                return new PageInfo<>();
             }
         }
         if (reportDTO.getOnDuty() != null) {
