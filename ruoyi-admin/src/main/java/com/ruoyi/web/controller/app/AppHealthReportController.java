@@ -95,8 +95,9 @@ public class AppHealthReportController {
     @PostMapping("/saveInfo")
     public ResultVO<String> saveInfo(HttpServletRequest request, @RequestBody AppHealthReportSaveDTO saveDTO) {
         String result = appHealthReportService.addAppHealthReport(saveDTO);
+        return new ResultVO<String>(SuccessEnums.SAVE_SUCCESS, result);
         //每日填报验证苏康码状态
-        String res = "";
+        /*String res = "";
 //        if(env.equals("prod")){
         try{
             systemService.getSkmInfoByIdNum(request,saveDTO.getIdNum(), saveDTO.getReportName());
@@ -109,7 +110,7 @@ public class AppHealthReportController {
             return new ResultVO<String>(201,res, result);
         }else{
             return new ResultVO<String>(SuccessEnums.SAVE_SUCCESS, result);
-        }
+        }*/
     }
 
 

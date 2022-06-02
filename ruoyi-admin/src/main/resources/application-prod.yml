@@ -112,8 +112,8 @@ fdfs:
     tracker-list: 127.0.0.1:22122
 
 wx:
-    appId: wxbcf441ff30b98641
-    appSecret: 802b45978b420dc38ea76b3191c7ef05
+    appId: wxf4b0662f24cd0513
+    appSecret: d3e0a7d00830b8882cebcc3a87c2b8e3
 
 smsZh:
     sms:
