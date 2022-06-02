@@ -182,17 +182,17 @@ public class AppPersonWxVisitServiceImpl extends ServiceImpl<AppPersonWxVisitMap
             appPersonList = appPersonService.list(new LambdaQueryWrapper<AppPerson>().eq(AppPerson::getIdNum, queryDTO.getId()).orderByDesc(AppPerson::getUpdateTime));
         }
         AppPerson appPerson = appPersonList.stream().findFirst().orElse(null);
-        if(appPerson!=null){
+        if(appPerson!=null) {
             appPersonWxVisitVO.setPersonName(appPerson.getPersonName());
             appPersonWxVisitVO.setMobile(appPerson.getMobile());
             appPersonWxVisitVO.setIdNum(appPerson.getIdNum());
-        }
-        LambdaQueryWrapper<AppPersonWxVisit> queryWrapper=new LambdaQueryWrapper<AppPersonWxVisit> ().eq (AppPersonWxVisit :: getPersonId,appPerson.getPersonId()).orderByDesc(AppPersonWxVisit::getCreateTime);
-        List<AppPersonWxVisit> appPersonWxVisits = appPersonWxVisitService.getBaseMapper ().selectList (queryWrapper);
-        AppPersonWxVisit appPersonWxVisit = appPersonWxVisits.stream().findFirst().orElse(null);
-        if (ObjectUtil.isNotNull(appPersonWxVisit)) {
-            BeanUtils.copyProperties(appPersonWxVisit,appPersonWxVisitVO);
-            return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, appPersonWxVisitVO);
+            LambdaQueryWrapper<AppPersonWxVisit> queryWrapper = new LambdaQueryWrapper<AppPersonWxVisit>().eq(AppPersonWxVisit::getPersonId, appPerson.getPersonId()).orderByDesc(AppPersonWxVisit::getUpdateTime);
+            List<AppPersonWxVisit> appPersonWxVisits = appPersonWxVisitService.getBaseMapper().selectList(queryWrapper);
+            AppPersonWxVisit appPersonWxVisit = appPersonWxVisits.stream().findFirst().orElse(null);
+            if (ObjectUtil.isNotNull(appPersonWxVisit)) {
+                BeanUtils.copyProperties(appPersonWxVisit, appPersonWxVisitVO);
+                return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, appPersonWxVisitVO);
+            }
         }
         return new ResultVO<AppPersonWxVisit>(SuccessEnums.QUERY_SUCCESS, null);
     }
