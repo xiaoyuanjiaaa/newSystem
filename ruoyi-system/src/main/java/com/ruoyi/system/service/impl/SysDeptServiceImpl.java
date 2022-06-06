@@ -367,9 +367,9 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper,SysDept> imple
     public Boolean updateDeptAdmin(SysDept dept) {
         //先删除旧部门负责人的角色权限
         SysDept oldSysDept=this.selectDeptById(dept.getDeptId());
-        if(ObjectUtil.isNotNull(oldSysDept.getLeader())){
             SysUser sysUser=sysUserService.getBaseMapper().selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getPersonId,oldSysDept.getLeaderId()));
             SysUserRole oldSysUserRole=new SysUserRole();
+        if(ObjectUtil.isNotNull(sysUser)){
             oldSysUserRole.setUserId(sysUser.getUserId());
             oldSysUserRole.setRoleId(RoleEnum.DEPT_ADMIN.getRoleId().longValue());
             userRoleMapper.deleteUserRoleInfo(oldSysUserRole);

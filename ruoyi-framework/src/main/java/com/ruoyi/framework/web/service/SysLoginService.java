@@ -2,7 +2,9 @@ package com.ruoyi.framework.web.service;
 
 import javax.annotation.Resource;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.system.mapper.SysRoleMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -32,6 +34,7 @@ import com.ruoyi.system.service.ISysUserService;
  * @author ruoyi
  */
 @Component
+@Slf4j
 public class SysLoginService
 {
     @Autowired
@@ -74,6 +77,9 @@ public class SysLoginService
             AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, "查询不到该用户,登录失败"));
             throw new CustomException("查询不到该用户,登录失败");
         }
+        if(ObjectUtil.isEmpty(loginUser.getUser().getRoles())){
+            throw new CustomException("没有分配角色,请联系管理员");
+        }
         //判断用户是否被封禁
         if("1".equals(loginUser.getUser().getStatus())){
             AsyncManager.me().execute(AsyncFactory.recordLogininfor(username,Constants.LOGIN_FAIL,"该用户已被封禁，请联系管理员处理！！！"));
@@ -112,6 +118,7 @@ public class SysLoginService
 
     public String loginForPda(String userName, String phone, String jobNumber) {
         LoginUser loginUser = userService.selectUserForPda(userName, phone, jobNumber);
+        log.info("登录用户:"+loginUser.getPermissions());
         if(loginUser==null || loginUser.getUser() == null || loginUser.getUser().getStatus().equals("1")){
 //        if(loginUser==null){
             AsyncManager.me().execute(AsyncFactory.recordLogininfor(phone, Constants.LOGIN_FAIL, "查询不到该用户,登录失败"));
